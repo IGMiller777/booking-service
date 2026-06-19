@@ -1,5 +1,5 @@
 import com.weather.TemperatureConverter;
 
-void main() throws IOException {
-    TemperatureConverter.main();
+void main(String[] args) throws IOException {
+    TemperatureConverter.main(args);
 }
