@@ -1,5 +1,6 @@
-import com.weather.TemperatureConverter;
+void main() {
 
-void main(String[] args) throws IOException {
-    TemperatureConverter.main(args);
+    int a = 1_000_000;
+    int b = 1_000_000;
+    System.out.println((long) a * b); // что выведет?
 }
