@@ -1,5 +1,8 @@
 package com.booking.util;
 
+import com.booking.domain.Money;
+import com.booking.domain.TimeSlot;
+
 public class TimeUtils {
     public static final int MINUTES_HAND = 60;
     public static final int ERROR_TIME = -1;
@@ -7,7 +10,6 @@ public class TimeUtils {
     public static final int MIN_MINUTE = 0;
     public static final int MAX_MINUTE = 60;
     public static final int MAX_DAY = 1440;
-
 
     public static int parseTime(String hhmm) {
         if (hhmm.length() != 5) {
@@ -29,7 +31,7 @@ public class TimeUtils {
     }
 
     public static String formatTime(int minutes) {
-        if (isValidTime(minutes)) {
+        if (!isValidTime(minutes)) {
             return "00:00";
         }
 

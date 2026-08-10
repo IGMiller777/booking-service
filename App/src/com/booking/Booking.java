@@ -12,7 +12,19 @@ public class Booking {
     private final Money price;
     private boolean cancelled = false;
 
-    public Booking(int userId, int resourceId, TimeSlot slot, Money price) {
+    public Booking(long userId, long resourceId, TimeSlot slot, Money price) {
+        if (slot == null) {
+            throw new IllegalArgumentException("slot cannot be null");
+        }
+
+        if (price == null) {
+            throw new IllegalArgumentException("price cannot be null");
+        }
+
+        if (resourceId <= 0 || userId <= 0) {
+            throw new IllegalArgumentException("User Id or Resource Id cannot be null");
+        }
+
         id = nextId++;
         this.userId = userId;
         this.resourceId = resourceId;

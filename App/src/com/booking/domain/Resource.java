@@ -9,12 +9,12 @@ public class Resource {
     private final Money hourlyRate;
     private boolean active;
 
-    private Resource(String name, String code, int capacity, Money hourlyRate) {
-        if(name.isEmpty() || code.isEmpty()) {
+    public Resource(String name, String code, int capacity, Money hourlyRate) {
+        if (name.isEmpty() || code.isEmpty()) {
             throw new IllegalArgumentException("Name and code cannot be empty");
         }
 
-        if(capacity == 0) {
+        if (capacity <= 0) {
             throw new IllegalArgumentException("Capacity must be greater than 0");
         }
 
@@ -25,8 +25,10 @@ public class Resource {
         this.hourlyRate = hourlyRate;
     }
 
-    public void activate(boolean active) {
-        this.active = true;
+    public void activate() {
+        if (!this.active) {
+            this.active = true;
+        }
     }
 
     public void deactivate() {

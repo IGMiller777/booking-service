@@ -6,7 +6,7 @@ public class User {
     private final String name;
     private final String email;
 
-    private User(String name, String email) {
+    public User(String name, String email) {
         if(name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }

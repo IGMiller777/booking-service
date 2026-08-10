@@ -10,14 +10,21 @@ public class InputReader {
         int result = 0;
 
         while (!isValidInput) {
-            System.out.print(prompt);
+            System.out.println(prompt);
             String line = scanner.nextLine().trim();
 
-            int input = Integer.parseInt(line);
-            if (input < min || input > max) {
-                isValidInput = true;
-                result = input;
+            try {
+                int input = Integer.parseInt(line);
+                if (input >= min && input <= max) {
+                    isValidInput = true;
+                    result = input;
+                } else {
+                    System.out.println("The number between" + min + " and " + max);
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("This is not a number. Try again.");
             }
+
         }
 
         return result;

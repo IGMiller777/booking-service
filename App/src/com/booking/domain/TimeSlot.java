@@ -2,27 +2,21 @@ package com.booking.domain;
 
 import com.booking.util.TimeUtils;
 
+import java.util.Objects;
+
 public final class TimeSlot {
     private final int startMinute;
     private final int endMinute;
 
-    private final int MINIMUM_MINUTE_SLOT = 30;
-    private final int MAXIMUM_MINUTE_SLOT = 240;
-
-    public int getStartMinute() {
-        return startMinute;
-    }
-
-    public int getEndMinute() {
-        return endMinute;
-    }
+    private static final int MINIMUM_MINUTE_SLOT = 30;
+    private static final int MAXIMUM_MINUTE_SLOT = 240;
 
     private TimeSlot(int startMinute, int endMinute) {
         if (startMinute > endMinute || startMinute < TimeUtils.MIN_MINUTE || startMinute > TimeUtils.MAX_DAY || endMinute > TimeUtils.MAX_DAY) {
             throw new IllegalArgumentException("Invalid arguments range");
         }
 
-        if (TimeUtils.isAlignedTo15(startMinute) || TimeUtils.isAlignedTo15(endMinute)) {
+        if (!TimeUtils.isAlignedTo15(startMinute) || !TimeUtils.isAlignedTo15(endMinute)) {
             throw new IllegalArgumentException("Arguments must be aligned to 15");
         }
 
@@ -38,6 +32,34 @@ public final class TimeSlot {
         this.endMinute = endMinute;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        TimeSlot timeSlot = (TimeSlot) o;
+
+        return startMinute == timeSlot.startMinute && endMinute == timeSlot.endMinute;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(startMinute, endMinute);
+    }
+
+    public int getStartMinute() {
+        return startMinute;
+    }
+
+    public int getEndMinute() {
+        return endMinute;
+    }
+
     public static TimeSlot of(int startMinute, int endMinute) {
         return new TimeSlot(startMinute, endMinute);
     }
@@ -47,19 +69,7 @@ public final class TimeSlot {
     }
 
     public boolean overlaps(TimeSlot other) {
-        if (startMinute < other.startMinute && endMinute < other.endMinute && endMinute > other.startMinute) {
-            return true;
-        }
-
-        if (startMinute > other.startMinute && startMinute < other.endMinute && endMinute > other.endMinute) {
-            return true;
-        }
-
-        if (startMinute < other.startMinute && endMinute > other.endMinute) {
-            return true;
-        }
-
-        return false;
+        return startMinute < other.endMinute && other.startMinute < endMinute;
     }
 
     public int durationMinutes() {

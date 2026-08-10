@@ -27,3 +27,7 @@ target
 build
 .idea
 out
+docs
+CLAUDE.md
+PROJECT.md
+.claude
