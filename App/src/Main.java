@@ -1,6 +1,9 @@
+import com.booking.cli.InputReader;
+
 void main() {
 
-    int a = 1_000_000;
-    int b = 1_000_000;
-    System.out.println((long) a * b); // что выведет?
+
+    InputReader reader = new InputReader();
+
+    reader.readInt("Enter the number:", 10, 1000);
 }
