@@ -1,7 +1,9 @@
 package com.igmiller;
 
+import com.igmiller.booking.domain.MyCurrency;
+
 public class Main {
-    static void main() {
-            System.out.println("aHASDASD");
+    public static void main(String[] args) {
+        System.out.println(MyCurrency.USD.name());
     }
 }

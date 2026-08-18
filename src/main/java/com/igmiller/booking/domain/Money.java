@@ -1,7 +1,5 @@
 package com.igmiller.booking.domain;
 
-import com.money.MyCurrency;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
