@@ -31,6 +31,10 @@ public class BookingService {
         }
 
         Booking[] userBooking = findUserBooking(userId);
+        if(userBooking == null) {
+            throw new ResourceNotFoundException(resourceId);
+        }
+
         long activeCount = countActive(userBooking);
         if (activeCount >= MAX_ACTIVE_BOOKINGS_PER_USER) {
             throw new BookingLimitExceededException(userId, MAX_ACTIVE_BOOKINGS_PER_USER);
@@ -68,6 +72,11 @@ public class BookingService {
     public Booking[] findUserBooking(long userId) {
         Booking[] all = bookingRepository.findAll();
         int count = 0;
+
+        if (all[0] == null) {
+            return null;
+        }
+
         for (Booking booking : all) {
             if (booking.getUserId() == userId) {
                 count++;

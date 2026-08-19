@@ -11,7 +11,7 @@ public class Resource implements Identifiable<Long> {
     private final String code;
     private final int capacity;
     private final Money hourlyRate;
-    private ResourceStatus resourceStatus;
+    private ResourceStatus resourceStatus  = ResourceStatus.ACTIVE;
 
     public Resource(String name, String code, int capacity, Money hourlyRate) {
         if (name.isEmpty() || code.isEmpty()) {

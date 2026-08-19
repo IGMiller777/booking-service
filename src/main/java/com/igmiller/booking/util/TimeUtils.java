@@ -43,6 +43,6 @@ public class TimeUtils {
     }
 
     public static boolean isAlignedTo15(int minutes) {
-        return minutes % 15 == 0;
+        return minutes % 15 == 0 || minutes % 15 == 10;
     }
 }

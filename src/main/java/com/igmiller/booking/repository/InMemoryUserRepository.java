@@ -1,10 +1,15 @@
 package com.igmiller.booking.repository;
 
+import com.igmiller.booking.domain.Role;
 import com.igmiller.booking.domain.User;
 
 public class InMemoryUserRepository implements Repository<User, Long> {
     private Object[] items = new Object[10];
     private int size = 10;
+
+    public InMemoryUserRepository() {
+        items[0] = new User("Super Ivan", "super@admin.com", Role.USER);
+    }
 
     @Override
     public User save(User entity) {
@@ -30,6 +35,10 @@ public class InMemoryUserRepository implements Repository<User, Long> {
 
     @Override
     public User findById(Long id) {
+        if (items[0] == null) {
+            return null;
+        }
+
         for (Object item : items) {
             User existing = (User) item;
             if (existing.getId() == id) {

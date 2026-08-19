@@ -1,10 +1,16 @@
 package com.igmiller.booking.repository;
 
+import com.igmiller.booking.domain.Money;
+import com.igmiller.booking.domain.MyCurrency;
 import com.igmiller.booking.domain.Resource;
 
 public class InMemoryResourceRepository implements Repository<Resource, Long> {
     private Object[] items = new Object[10];
     private int size = 10;
+
+    public InMemoryResourceRepository() {
+        this.items[0] = new Resource("RESOURCE", "BLACK", 5, Money.of("100", MyCurrency.EUR));
+    }
 
     @Override
     public Resource save(Resource entity) {

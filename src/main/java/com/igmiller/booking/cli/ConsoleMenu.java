@@ -95,6 +95,7 @@ public class ConsoleMenu {
         }
 
         long resourceId = input.readInt("Enter Resource ID: ", 1, Integer.MAX_VALUE);
+
         int startMinute = TimeUtils.parseTime(input.readLine("Start time HH:MM: "));
         int endMinute = TimeUtils.parseTime(input.readLine("End time HH:MM: "));
 
