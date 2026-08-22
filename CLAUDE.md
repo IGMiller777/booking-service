@@ -175,12 +175,12 @@
 
 ## 6. Архитектура и технические решения (зафиксированы, не пересматриваются в рамках Java-части)
 
-- **Java 21**, **Maven**, package **`com.booking`** (в PR #1 было расхождение —
+- **Java 21**, **Maven**, package **`com.igmiller.booking`** (в PR #1 было расхождение —
   `com.booking` — уточни у Ивана, актуально ли это ещё на момент твоей работы).
 - GitHub: `IGMiller777/booking-service`.
 - Структура пакетов:
   ```
-  com.booking
+  com.igmiller.booking
   ├── domain       — Money, TimeSlot, User, Resource, Booking, enum'ы. НИЧЕГО не импортирует.
   ├── repository   — интерфейсы + реализации (in-memory → file → jdbc)
   ├── service      — бизнес-логика. НЕ печатает в консоль, ни одного System.out.
