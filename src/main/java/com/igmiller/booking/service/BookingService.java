@@ -30,12 +30,17 @@ public class BookingService {
             throw new ResourceUnavailableException(resourceId, resource.getStatus());
         }
 
-        Booking[] userBooking = findUserBooking(userId);
-        if(userBooking == null) {
-            throw new ResourceNotFoundException(resourceId);
+        if (resource.getResourceType() == ResourceType.MEETING_ROOM && slot.duration() < 30) {
+            throw new ResourceUnavailableException(resourceId, resource.getStatus());
         }
 
+        if (resource.getResourceType() == ResourceType.DESK && slot.duration() < 15) {
+            throw new ResourceUnavailableException(resourceId, resource.getStatus());
+        }
+
+        Booking[] userBooking = findUserBooking(userId);
         long activeCount = countActive(userBooking);
+
         if (activeCount >= MAX_ACTIVE_BOOKINGS_PER_USER) {
             throw new BookingLimitExceededException(userId, MAX_ACTIVE_BOOKINGS_PER_USER);
         }
@@ -53,16 +58,21 @@ public class BookingService {
 
     }
 
-    public BookingResult cancel(long userId, long bookingId) {
+    public BookingResult cancel(User user, long bookingId) {
         Booking booking = bookingRepository.findById(bookingId);
         if (booking == null) {
             throw new BookingNotFoundException(bookingId);
         }
 
-        if (booking.getUserId() != userId) {
+        if (booking.getUserId() != user.getId()) {
             throw new CancellationNotAllowedException(bookingId);
         }
 
+        if (booking.getStatus() != BookingStatus.CANCELLED) {
+            throw new CancellationNotAllowedException(bookingId);
+        }
+
+        // TODO: I7 — правило 2 часов, после этапа 11
         booking.cancel();
         bookingRepository.save(booking);
 
@@ -72,10 +82,6 @@ public class BookingService {
     public Booking[] findUserBooking(long userId) {
         Booking[] all = bookingRepository.findAll();
         int count = 0;
-
-        if (all[0] == null) {
-            return null;
-        }
 
         for (Booking booking : all) {
             if (booking.getUserId() == userId) {

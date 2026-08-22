@@ -4,12 +4,12 @@ import com.igmiller.booking.domain.Booking;
 
 public class InMemoryBookingsRepository implements Repository<Booking, Long> {
     private Object[] items = new Object[10];
-    private int size = 10;
+    private int size = 0;
 
     @Override
     public Booking save(Booking entity) {
-        for (int i = 0; i < items.length; i++) {
-            Identifiable<Long> existing = (Identifiable<Long>) items[i];
+        for (int i = 0; i < size; i++) {
+            Booking existing = (Booking) items[i];
 
             if (existing.getId().equals(entity.getId())) {
                 items[i] = entity;
@@ -32,7 +32,7 @@ public class InMemoryBookingsRepository implements Repository<Booking, Long> {
     public Booking findById(Long id) {
         for (Object item : items) {
             Booking existing = (Booking) item;
-            if (existing.getId() == id) {
+            if (existing.getId().equals(id)) {
                 return existing;
             }
         }
@@ -41,10 +41,9 @@ public class InMemoryBookingsRepository implements Repository<Booking, Long> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public Booking[] findAll() {
         Booking[] results = new Booking[size];
-        for (int i = 0; i < items.length; i++) {
+        for (int i = 0; i < size; i++) {
             results[i] = (Booking) items[i];
         }
 
@@ -56,8 +55,8 @@ public class InMemoryBookingsRepository implements Repository<Booking, Long> {
         for (int i = 0; i < size; i++) {
             Booking existing = (Booking) items[i];
 
-            if (existing.getId() == id) {
-                for (int j = i; j < size; j++) {
+            if (existing.getId().equals(id)) {
+                for (int j = i; j < size - 1; j++) {
                     items[j] = items[j + 1];
                 }
 

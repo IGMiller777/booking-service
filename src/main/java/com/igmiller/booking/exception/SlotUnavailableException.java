@@ -6,7 +6,7 @@ public class SlotUnavailableException extends BookingServiceException {
     private final long resourceId;
     private final TimeSlot conflictingSlot;
 
-    protected SlotUnavailableException(long resourceId, TimeSlot conflictingSlot) {
+    public SlotUnavailableException(long resourceId, TimeSlot conflictingSlot) {
         super("Conflict in booking Slot: " + conflictingSlot + ". Resource booked:" + resourceId);
         this.resourceId = resourceId;
         this.conflictingSlot = conflictingSlot;

@@ -1,7 +1,5 @@
 package com.igmiller.booking.domain;
 
-import com.igmiller.booking.repository.Identifiable;
-
 public class User implements Identifiable<Long> {
     private static long nextId = 1;
     private final long id;
@@ -9,8 +7,7 @@ public class User implements Identifiable<Long> {
     private final String email;
     private final Role role;
 
-    public User(String name, String email, Role role) {
-        this.role = role;
+    private User(String name, String email, Role role) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
@@ -26,6 +23,11 @@ public class User implements Identifiable<Long> {
         id = nextId++;
         this.name = name;
         this.email = email;
+        this.role = role;
+    }
+
+    public static User of(String name, String email, Role role) {
+        return new User(name, email, role);
     }
 
     @Override

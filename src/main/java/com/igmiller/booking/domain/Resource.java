@@ -1,9 +1,5 @@
 package com.igmiller.booking.domain;
 
-import com.igmiller.booking.repository.Identifiable;
-
-import java.util.Objects;
-
 public class Resource implements Identifiable<Long> {
     private static long nextId = 1;
     private final long id;
@@ -11,10 +7,11 @@ public class Resource implements Identifiable<Long> {
     private final String code;
     private final int capacity;
     private final Money hourlyRate;
-    private ResourceStatus resourceStatus  = ResourceStatus.ACTIVE;
+    private ResourceStatus resourceStatus = ResourceStatus.ACTIVE;
+    private ResourceType resourceType = ResourceType.MEETING_ROOM;
 
-    public Resource(String name, String code, int capacity, Money hourlyRate) {
-        if (name.isEmpty() || code.isEmpty()) {
+    private Resource(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType) {
+        if (name == null || code == null || hourlyRate == null || name.isEmpty() || code.isEmpty()) {
             throw new IllegalArgumentException("Name and code cannot be empty");
         }
 
@@ -27,6 +24,11 @@ public class Resource implements Identifiable<Long> {
         this.code = code;
         this.capacity = capacity;
         this.hourlyRate = hourlyRate;
+        this.resourceType = resourceType;
+    }
+
+    public static Resource of(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType) {
+        return new Resource(name, code, capacity, hourlyRate, resourceType);
     }
 
     @Override
@@ -54,15 +56,13 @@ public class Resource implements Identifiable<Long> {
         return "Resource{code='%s', name='%s'; capacity=%d}".formatted(code, name, capacity);
     }
 
-    public void activate() {
-        if (this.resourceStatus == ResourceStatus.RETIRED || this.resourceStatus == ResourceStatus.MAINTENANCE) {
-            this.resourceStatus = ResourceStatus.ACTIVE;
-        }
-    }
-
     @Override
     public Long getId() {
         return id;
+    }
+
+    public ResourceType getResourceType() {
+        return resourceType;
     }
 
     public Money getHourlyRate() {
@@ -71,6 +71,12 @@ public class Resource implements Identifiable<Long> {
 
     public ResourceStatus getStatus() {
         return resourceStatus;
+    }
+
+    public void activate() {
+        if (this.resourceStatus == ResourceStatus.RETIRED || this.resourceStatus == ResourceStatus.MAINTENANCE) {
+            this.resourceStatus = ResourceStatus.ACTIVE;
+        }
     }
 
     public void deactivate() {

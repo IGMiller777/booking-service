@@ -1,10 +1,5 @@
 package com.igmiller.booking.domain;
 
-import com.igmiller.booking.domain.BookingStatus;
-import com.igmiller.booking.domain.Money;
-import com.igmiller.booking.domain.TimeSlot;
-import com.igmiller.booking.repository.Identifiable;
-
 public class Booking implements Identifiable<Long> {
     private static long nextId = 1;
     private final long id;
@@ -14,7 +9,7 @@ public class Booking implements Identifiable<Long> {
     private final Money price;
     private BookingStatus status;
 
-    public Booking(long userId, long resourceId, TimeSlot slot, Money price) {
+    private Booking(long userId, long resourceId, TimeSlot slot, Money price) {
         if (slot == null) {
             throw new IllegalArgumentException("slot cannot be null");
         }
@@ -32,6 +27,7 @@ public class Booking implements Identifiable<Long> {
         this.resourceId = resourceId;
         this.slot = slot;
         this.price = price;
+        this.status = BookingStatus.CONFIRMED;
     }
 
     public static Booking of(long userId, long resourceId, TimeSlot slot, Money price) {

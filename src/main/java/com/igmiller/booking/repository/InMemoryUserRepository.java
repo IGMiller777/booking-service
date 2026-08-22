@@ -5,16 +5,16 @@ import com.igmiller.booking.domain.User;
 
 public class InMemoryUserRepository implements Repository<User, Long> {
     private Object[] items = new Object[10];
-    private int size = 10;
+    private int size = 0;
 
     public InMemoryUserRepository() {
-        items[0] = new User("Super Ivan", "super@admin.com", Role.USER);
+        items[0] = User.of("Super Ivan", "super@admin.com", Role.USER);
     }
 
     @Override
     public User save(User entity) {
-        for (int i = 0; i < items.length; i++) {
-            Identifiable<Long> existing = (Identifiable<Long>) items[i];
+        for (int i = 0; i < size; i++) {
+            User existing = (User) items[i];
 
             if (existing.getId().equals(entity.getId())) {
                 items[i] = entity;
@@ -41,7 +41,7 @@ public class InMemoryUserRepository implements Repository<User, Long> {
 
         for (Object item : items) {
             User existing = (User) item;
-            if (existing.getId() == id) {
+            if (existing.getId().equals(id)) {
                 return existing;
             }
         }
@@ -50,10 +50,9 @@ public class InMemoryUserRepository implements Repository<User, Long> {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public User[] findAll() {
         User[] results = new User[size];
-        for (int i = 0; i < items.length; i++) {
+        for (int i = 0; i < size; i++) {
             results[i] = (User) items[i];
         }
 
@@ -65,8 +64,8 @@ public class InMemoryUserRepository implements Repository<User, Long> {
         for (int i = 0; i < size; i++) {
             User existing = (User) items[i];
 
-            if (existing.getId() == id) {
-                for (int j = i; j < size; j++) {
+            if (existing.getId().equals(id)) {
+                for (int j = i; j < size - 1; j++) {
                     items[j] = items[j + 1];
                 }
 

@@ -7,21 +7,23 @@ import com.igmiller.booking.domain.User;
 import com.igmiller.booking.exception.BookingServiceException;
 import com.igmiller.booking.repository.Repository;
 import com.igmiller.booking.service.BookingService;
+import com.igmiller.booking.service.ResourceService;
+import com.igmiller.booking.service.UserService;
 import com.igmiller.booking.util.TimeUtils;
 
 public class ConsoleMenu {
     private final InputReader input;
     private final BookingService bookingService;
-    private final Repository<Resource, Long> resourceRepository;
-    private final Repository<User, Long> userRepository;
+    private final UserService userService;
+    private final ResourceService resourceService;
 
     private User currentUser;
 
-    public ConsoleMenu(InputReader input, BookingService bookingService, Repository<Resource, Long> resourceRepository, Repository<User, Long> userRepository) {
+    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService) {
         this.input = input;
         this.bookingService = bookingService;
-        this.userRepository = userRepository;
-        this.resourceRepository = resourceRepository;
+        this.userService = userService;
+        this.resourceService = resourceService;
     }
 
     public void run() {
@@ -39,7 +41,6 @@ public class ConsoleMenu {
                 case 7 -> handleReports();
                 case 8 -> handleAdmin();
                 case 0 -> running = false;
-                default -> System.out.println("Incorrect Menu Point. Try again!");
             }
         }
 
@@ -67,7 +68,8 @@ public class ConsoleMenu {
 
     private void handleLogin() {
         long userId = input.readInt("Enter User ID: ", 1, Integer.MAX_VALUE);
-        User user = userRepository.findById(userId);
+        User user = userService.findById(userId);
+
         if (user == null) {
             System.out.println("Invalid User ID. Try again!");
             return;
@@ -78,14 +80,15 @@ public class ConsoleMenu {
     }
 
     private void handleListResources() {
-        Resource[] resources = resourceRepository.findAll();
+        Resource[] resources = resourceService.findAll();
+
         if (resources.length == 0) {
             System.out.println("Resource List is empty. Try again!");
             return;
         }
 
         for (Resource resource : resources) {
-            System.out.println("Resource ID: " + resource);
+            System.out.println("Resource ID: " + resource.getId());
         }
     }
 

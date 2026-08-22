@@ -1,4 +1,4 @@
-package com.igmiller.booking.repository;
+package com.igmiller.booking.domain;
 
 public interface Identifiable<ID> {
     ID getId();

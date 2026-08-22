@@ -9,7 +9,7 @@ public final class TimeSlot {
     private final int endMinute;
 
     private static final int MINIMUM_MINUTE_SLOT = 30;
-    private static final int MAXIMUM_MINUTE_SLOT = 240;
+    private static final int MAXIMUM_MINUTE_SLOT = 320;
 
     private TimeSlot(int startMinute, int endMinute) {
         if (startMinute > endMinute || startMinute < TimeUtils.MIN_MINUTE || startMinute > TimeUtils.MAX_DAY || endMinute > TimeUtils.MAX_DAY) {
@@ -54,7 +54,7 @@ public final class TimeSlot {
 
     @Override
     public String toString() {
-        return TimeUtils.formatTime(duration());
+        return TimeUtils.formatTime(startMinute) + "-"  + TimeUtils.formatTime(endMinute);
     }
 
     public int getStartMinute() {
@@ -79,10 +79,6 @@ public final class TimeSlot {
 
     public boolean overlaps(TimeSlot other) {
         return startMinute < other.endMinute && other.startMinute < endMinute;
-    }
-
-    public int durationMinutes() {
-        return endMinute - startMinute;
     }
 
     public boolean contain(int minute) {

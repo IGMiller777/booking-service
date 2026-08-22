@@ -11,7 +11,7 @@ public class HourlyPricingStrategy implements PricingStrategy {
 
     @Override
     public Money calculate(Resource resource, TimeSlot timeSlot) {
-        int rawMinutes = timeSlot.durationMinutes();
+        int rawMinutes = timeSlot.duration();
         int roundedMinutes = roundUpTo15(rawMinutes);
 
         BigDecimal hours = BigDecimal.valueOf(roundedMinutes).divide(BigDecimal.valueOf(60), 10, RoundingMode.HALF_UP);
