@@ -61,6 +61,10 @@ public class Resource implements Identifiable<Long> {
         return id;
     }
 
+    public String getCode() {
+        return code;
+    }
+
     public ResourceType getResourceType() {
         return resourceType;
     }

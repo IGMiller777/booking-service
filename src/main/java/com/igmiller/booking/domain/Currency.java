@@ -1,6 +1,6 @@
 package com.igmiller.booking.domain;
 
-public enum MyCurrency {
+public enum Currency {
     USD,
     EUR,
     RUB
