@@ -4,7 +4,7 @@ import com.igmiller.booking.util.TimeUtils;
 
 import java.util.Objects;
 
-public final class TimeSlot {
+public final class TimeSlot implements Comparable<TimeSlot> {
     private final int startMinute;
     private final int endMinute;
 
@@ -54,7 +54,17 @@ public final class TimeSlot {
 
     @Override
     public String toString() {
-        return TimeUtils.formatTime(startMinute) + "-"  + TimeUtils.formatTime(endMinute);
+        return TimeUtils.formatTime(startMinute) + "-" + TimeUtils.formatTime(endMinute);
+    }
+
+    @Override
+    public int compareTo(TimeSlot other) {
+        int startComparison = Integer.compare(this.startMinute, other.startMinute);
+        if (startComparison != 0) {
+            return startComparison;
+        }
+
+        return Integer.compare(this.endMinute, other.endMinute);
     }
 
     public int getStartMinute() {

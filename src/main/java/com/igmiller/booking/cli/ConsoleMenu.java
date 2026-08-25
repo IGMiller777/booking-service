@@ -1,9 +1,6 @@
 package com.igmiller.booking.cli;
 
-import com.igmiller.booking.domain.BookingResult;
-import com.igmiller.booking.domain.Resource;
-import com.igmiller.booking.domain.TimeSlot;
-import com.igmiller.booking.domain.User;
+import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
 import com.igmiller.booking.repository.Repository;
 import com.igmiller.booking.service.BookingService;
@@ -11,19 +8,24 @@ import com.igmiller.booking.service.ResourceService;
 import com.igmiller.booking.service.UserService;
 import com.igmiller.booking.util.TimeUtils;
 
+import javax.swing.*;
+import java.util.List;
+
 public class ConsoleMenu {
     private final InputReader input;
     private final BookingService bookingService;
     private final UserService userService;
     private final ResourceService resourceService;
+    private final ActionHistory actionHistory;
 
     private User currentUser;
 
-    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService) {
+    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService, ActionHistory actionHistory) {
         this.input = input;
         this.bookingService = bookingService;
         this.userService = userService;
         this.resourceService = resourceService;
+        this.actionHistory = actionHistory;
     }
 
     public void run() {
@@ -40,6 +42,7 @@ public class ConsoleMenu {
                 case 6 -> handleCancelBooking();
                 case 7 -> handleReports();
                 case 8 -> handleAdmin();
+                case 9 -> handleShowHistory();
                 case 0 -> running = false;
             }
         }
@@ -58,6 +61,7 @@ public class ConsoleMenu {
                 6. Cancel Booking
                 7. Reports
                 8. Admin: Add/Remove resource
+                9. Last actions
                 0. Exit
                 """);
 
@@ -80,12 +84,14 @@ public class ConsoleMenu {
     }
 
     private void handleListResources() {
-        Resource[] resources = resourceService.findAll();
+        List<Resource> resources = resourceService.findAll();
 
-        if (resources.length == 0) {
-            System.out.println("Resource List is empty. Try again!");
+        if (resources.isEmpty()) {
+            System.out.println("Resource List is empty!");
             return;
         }
+
+        resources.sort(ResourceComparators.BY_NAME);
 
         for (Resource resource : resources) {
             System.out.println("Resource ID: " + resource.getId());
@@ -122,6 +128,8 @@ public class ConsoleMenu {
                 case BookingResult.Conflict s -> "Busy - " + s.existing().getSlot();
             };
             System.out.println(message);
+
+            actionHistory.record("Resource booked. (" + resourceId + ", " + slot.toString() + ")");
         } catch (BookingServiceException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {
@@ -153,6 +161,17 @@ public class ConsoleMenu {
     private void handleAdmin() {
         // TODO
         System.out.println("Admin on Date: ");
+    }
+
+    private void handleShowHistory() {
+        if (actionHistory.recent().isEmpty()) {
+            System.out.println("No history found!");
+            return;
+        }
+
+        for (String action : actionHistory.recent()) {
+            System.out.println(action);
+        }
     }
 
     private boolean requireLogin() {

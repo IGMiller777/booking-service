@@ -2,6 +2,7 @@ package com.igmiller;
 
 import com.igmiller.booking.cli.ConsoleMenu;
 import com.igmiller.booking.cli.InputReader;
+import com.igmiller.booking.domain.ActionHistory;
 import com.igmiller.booking.domain.Booking;
 import com.igmiller.booking.domain.Resource;
 import com.igmiller.booking.domain.User;
@@ -18,7 +19,7 @@ public class Main {
     public static void main(String[] args) {
         InputReader input = new InputReader();
 
-        Repository<Booking, Long> bookingRepository = new BookingsRepository();
+        BookingsRepository bookingRepository = new BookingsRepository();
         Repository<Resource, Long> resourceRepository = new ResourceRepository();
         Repository<User, Long> userRepository = new UserRepository();
 
@@ -27,7 +28,9 @@ public class Main {
         UserService userService = new UserService(userRepository);
         ResourceService repositoryService = new ResourceService(resourceRepository);
 
-        ConsoleMenu consoleMenu = new ConsoleMenu(input, bookingService, userService, repositoryService);
+        ActionHistory actionHistory = new ActionHistory();
+
+        ConsoleMenu consoleMenu = new ConsoleMenu(input, bookingService, userService, repositoryService, actionHistory);
 
         consoleMenu.run();
     }
