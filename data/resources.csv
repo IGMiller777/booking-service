@@ -1,0 +1,5 @@
+id;code;name;capacity;hourlyRateMinor;currency;type;status
+1;MR-101;Meeting Room A;8;150000;RUB;MEETING_ROOM;ACTIVE
+2;MR-102;Meeting Room B;4;100000;RUB;MEETING_ROOM;ACTIVE
+3;DESK-01;Table 1;1;30000;RUB;DESK;ACTIVE
+4;CT-01;Tennis Court;4;200000;RUB;COURT;MAINTENANCE

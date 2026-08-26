@@ -6,6 +6,8 @@ import com.igmiller.booking.exception.*;
 import com.igmiller.booking.repository.BookingsRepository;
 import com.igmiller.booking.repository.Repository;
 
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 public class BookingService {
@@ -23,7 +25,7 @@ public class BookingService {
         this.pricingService = pricingService;
     }
 
-    public BookingResult book(long userId, long resourceId, TimeSlot slot) {
+    public BookingResult book(long userId, long resourceId, LocalDate date, TimeSlot slot) {
         Resource resource = resourceRepository.findById(resourceId);
 
         if (resource == null) {
@@ -45,13 +47,13 @@ public class BookingService {
             throw new BookingLimitExceededException(userId, MAX_ACTIVE_BOOKINGS_PER_USER);
         }
 
-        Booking conflict = findConflicts(resourceId, slot);
+        Booking conflict = findConflicts(resourceId, date, slot);
         if (conflict != null) {
             return new BookingResult.Conflict(conflict);
         }
 
         Money price = pricingService.calculatePrice(resource, slot);
-        Booking booking = Booking.of(userId, resourceId, slot, price);
+        Booking booking = Booking.of(userId, resourceId, date, slot, price);
         bookingRepository.save(booking);
 
         return new BookingResult.Success(booking);
@@ -95,10 +97,10 @@ public class BookingService {
         return count;
     }
 
-    private Booking findConflicts(long resourceId, TimeSlot slot) {
+    private Booking findConflicts(long resourceId, LocalDate date, TimeSlot slot) {
         List<Booking> all = bookingRepository.findByResourceId(resourceId);
         for (Booking booking : all) {
-            if (booking.getStatus() == BookingStatus.CONFIRMED && booking.getSlot().overlaps(slot)) {
+            if (booking.getStatus() == BookingStatus.CONFIRMED && booking.getDate().equals(date) && booking.getSlot().overlaps(slot)) {
                 return booking;
             }
         }

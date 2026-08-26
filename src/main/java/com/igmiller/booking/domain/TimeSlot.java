@@ -75,6 +75,8 @@ public final class TimeSlot implements Comparable<TimeSlot> {
         return endMinute;
     }
 
+    public
+
     public int duration() {
         return endMinute - startMinute;
     }

@@ -1,5 +1,7 @@
 package com.igmiller.booking.domain;
 
+import com.igmiller.booking.util.Validators;
+
 public class Resource implements Identifiable<Long> {
     private static long nextId = 1;
     private final long id;
@@ -17,6 +19,10 @@ public class Resource implements Identifiable<Long> {
 
         if (capacity <= 0) {
             throw new IllegalArgumentException("Capacity must be greater than 0");
+        }
+
+        if(!Validators.isValidResourceCode(code)) {
+            throw new IllegalArgumentException("Invalid resource code");
         }
 
         id = nextId++;

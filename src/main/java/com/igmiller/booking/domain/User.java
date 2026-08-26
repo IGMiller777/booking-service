@@ -1,5 +1,7 @@
 package com.igmiller.booking.domain;
 
+import com.igmiller.booking.util.Validators;
+
 public class User implements Identifiable<Long> {
     private static long nextId = 1;
     private final long id;
@@ -17,6 +19,10 @@ public class User implements Identifiable<Long> {
         }
 
         if (!email.contains("@")) {
+            throw new IllegalArgumentException("Email invalid format");
+        }
+
+        if(!Validators.isValidEmail(email)) {
             throw new IllegalArgumentException("Email invalid format");
         }
 
