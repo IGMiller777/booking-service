@@ -1,0 +1,4 @@
+id;name;email;role
+1;Ivan Ivanov;ivan@example.com;ADMIN
+2;Peter Peters;maria@example.com;USER
+3;John Johns;johns@example.com;USER

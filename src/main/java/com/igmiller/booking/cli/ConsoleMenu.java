@@ -1,36 +1,53 @@
 package com.igmiller.booking.cli;
 
-import com.igmiller.booking.domain.BookingResult;
-import com.igmiller.booking.domain.Resource;
-import com.igmiller.booking.domain.TimeSlot;
-import com.igmiller.booking.domain.User;
+import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
-import com.igmiller.booking.repository.Repository;
+import com.igmiller.booking.service.ActionHistory;
 import com.igmiller.booking.service.BookingService;
 import com.igmiller.booking.service.ResourceService;
 import com.igmiller.booking.service.UserService;
-import com.igmiller.booking.util.TimeUtils;
+import com.igmiller.booking.util.Validators;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.util.List;
 
 public class ConsoleMenu {
     private final InputReader input;
     private final BookingService bookingService;
     private final UserService userService;
     private final ResourceService resourceService;
+    private final ActionHistory actionHistory;
+
+    private static final String MENU = """
+            Welcome to Booking Service
+            1. Enter as User
+            2. Resources List
+            3. Available slot for Resource on Date
+            4. Book
+            5. My bookings
+            6. Cancel Booking
+            7. Reports
+            8. Admin: Add/Remove resource
+            9. Last actions
+            0. Exit
+            """;
 
     private User currentUser;
 
-    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService) {
+    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService, ActionHistory actionHistory) {
         this.input = input;
         this.bookingService = bookingService;
         this.userService = userService;
         this.resourceService = resourceService;
+        this.actionHistory = actionHistory;
     }
 
     public void run() {
         boolean running = true;
         while (running) {
             printMenu();
-            int choice = input.readInt("Selected: ", 0, 8);
+            int choice = input.readInt("Selected: ", 0, 9);
             switch (choice) {
                 case 1 -> handleLogin();
                 case 2 -> handleListResources();
@@ -40,6 +57,7 @@ public class ConsoleMenu {
                 case 6 -> handleCancelBooking();
                 case 7 -> handleReports();
                 case 8 -> handleAdmin();
+                case 9 -> handleShowHistory();
                 case 0 -> running = false;
             }
         }
@@ -48,18 +66,7 @@ public class ConsoleMenu {
     }
 
     private void printMenu() {
-        System.out.println("""
-                Welcom to Booking Service
-                1. Enter as User
-                2. Resources List
-                3. Available slot for Resource on Date
-                4. Book
-                5. My bookings
-                6. Cancel Booking
-                7. Reports
-                8. Admin: Add/Remove resource
-                0. Exit
-                """);
+        System.out.println(MENU);
 
         if (currentUser != null) {
             System.out.println("Current User: " + currentUser);
@@ -80,12 +87,14 @@ public class ConsoleMenu {
     }
 
     private void handleListResources() {
-        Resource[] resources = resourceService.findAll();
+        List<Resource> resources = resourceService.findAll();
 
-        if (resources.length == 0) {
-            System.out.println("Resource List is empty. Try again!");
+        if (resources.isEmpty()) {
+            System.out.println("Resource List is empty!");
             return;
         }
+
+        resources.sort(ResourceComparators.BY_NAME);
 
         for (Resource resource : resources) {
             System.out.println("Resource ID: " + resource.getId());
@@ -99,29 +108,27 @@ public class ConsoleMenu {
 
         long resourceId = input.readInt("Enter Resource ID: ", 1, Integer.MAX_VALUE);
 
-        int startMinute = TimeUtils.parseTime(input.readLine("Start time HH:MM: "));
-        int endMinute = TimeUtils.parseTime(input.readLine("End time HH:MM: "));
+        LocalDate date;
 
-        if (startMinute == -1 || endMinute == -1) {
-            System.out.println("Invalid Time Format. Try again!");
+        try {
+            date = LocalDate.parse(input.readLine("Date yyyy-MM-dd: "));
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid Date DD/MM/YYYY format. Try again!");
             return;
         }
 
-        TimeSlot slot;
-        try {
-            slot = TimeSlot.of(startMinute, endMinute);
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid Time Format." + e.getMessage());
-            return;
-        }
+        int[] range = Validators.isValidTimeRange(input.readLine("Time (HH:MM-HH:MM): "));
+        TimeSlot slot = TimeSlot.of(range[0], range[1]);
 
         try {
-            BookingResult result = bookingService.book(currentUser.getId(), resourceId, slot);
+            BookingResult result = bookingService.book(currentUser.getId(), resourceId, date, slot);
             String message = switch (result) {
-                case BookingResult.Success s -> "Booked Successfully - " + s.booking().getId();
+                case BookingResult.Success s -> "Booked Successfully - " + s.booking().getDate() + s.booking().getId();
                 case BookingResult.Conflict s -> "Busy - " + s.existing().getSlot();
             };
             System.out.println(message);
+
+            actionHistory.record("Resource booked. (" + resourceId + ", " + slot.toString() + ")");
         } catch (BookingServiceException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {
@@ -153,6 +160,17 @@ public class ConsoleMenu {
     private void handleAdmin() {
         // TODO
         System.out.println("Admin on Date: ");
+    }
+
+    private void handleShowHistory() {
+        if (actionHistory.recent().isEmpty()) {
+            System.out.println("No history found!");
+            return;
+        }
+
+        for (String action : actionHistory.recent()) {
+            System.out.println(action);
+        }
     }
 
     private boolean requireLogin() {

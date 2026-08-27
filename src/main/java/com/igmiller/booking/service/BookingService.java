@@ -3,23 +3,32 @@ package com.igmiller.booking.service;
 import com.igmiller.booking.domain.Booking;
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.*;
+import com.igmiller.booking.repository.BookingRepository;
+import com.igmiller.booking.repository.BookingsRepository;
 import com.igmiller.booking.repository.Repository;
+import com.igmiller.booking.repository.ResourceRepository;
+import com.igmiller.booking.repository.file.FileBookingRepository;
+
+import java.time.LocalDate;
+import java.util.Date;
+import java.util.List;
 
 public class BookingService {
 
     private static final int MAX_ACTIVE_BOOKINGS_PER_USER = 5;
 
-    private final Repository<Booking, Long> bookingRepository;
-    private final Repository<Resource, Long> resourceRepository;
+    private final BookingRepository bookingRepository;
+    private final ResourceRepository resourceRepository;
     private final PricingService pricingService;
 
-    public BookingService(Repository<Booking, Long> bookingRepository, Repository<Resource, Long> resourceRepository, PricingService pricingService) {
+    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, PricingService pricingService) {
         this.bookingRepository = bookingRepository;
+
         this.resourceRepository = resourceRepository;
         this.pricingService = pricingService;
     }
 
-    public BookingResult book(long userId, long resourceId, TimeSlot slot) {
+    public BookingResult book(long userId, long resourceId, LocalDate date, TimeSlot slot) {
         Resource resource = resourceRepository.findById(resourceId);
 
         if (resource == null) {
@@ -30,45 +39,41 @@ public class BookingService {
             throw new ResourceUnavailableException(resourceId, resource.getStatus());
         }
 
-        if (resource.getResourceType() == ResourceType.MEETING_ROOM && slot.duration() < 30) {
-            throw new ResourceUnavailableException(resourceId, resource.getStatus());
+        if (!resource.getResourceType().canBeBookedFor(slot)) {
+            throw new SlotInvalidException(slot);
         }
 
-        if (resource.getResourceType() == ResourceType.DESK && slot.duration() < 15) {
-            throw new ResourceUnavailableException(resourceId, resource.getStatus());
-        }
-
-        Booking[] userBooking = findUserBooking(userId);
+        List<Booking> userBooking = findUserBooking(userId);
         long activeCount = countActive(userBooking);
 
         if (activeCount >= MAX_ACTIVE_BOOKINGS_PER_USER) {
             throw new BookingLimitExceededException(userId, MAX_ACTIVE_BOOKINGS_PER_USER);
         }
 
-        Booking conflict = findConflicts(resourceId, slot);
+        Booking conflict = findConflicts(resourceId, date, slot);
         if (conflict != null) {
             return new BookingResult.Conflict(conflict);
         }
 
         Money price = pricingService.calculatePrice(resource, slot);
-        Booking booking = Booking.of(userId, resourceId, slot, price);
+        Booking booking = Booking.of(userId, resourceId, date, slot, price);
         bookingRepository.save(booking);
 
         return new BookingResult.Success(booking);
 
     }
 
-    public BookingResult cancel(User user, long bookingId) {
+    public BookingResult cancel(long userId, long bookingId) {
         Booking booking = bookingRepository.findById(bookingId);
         if (booking == null) {
             throw new BookingNotFoundException(bookingId);
         }
 
-        if (booking.getUserId() != user.getId()) {
+        if (booking.getUserId() != userId) {
             throw new CancellationNotAllowedException(bookingId);
         }
 
-        if (booking.getStatus() != BookingStatus.CANCELLED) {
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
             throw new CancellationNotAllowedException(bookingId);
         }
 
@@ -79,28 +84,11 @@ public class BookingService {
         return new BookingResult.Success(booking);
     }
 
-    public Booking[] findUserBooking(long userId) {
-        Booking[] all = bookingRepository.findAll();
-        int count = 0;
-
-        for (Booking booking : all) {
-            if (booking.getUserId() == userId) {
-                count++;
-            }
-        }
-
-        Booking[] result = new Booking[count];
-        int index = 0;
-        for (Booking booking : all) {
-            if (booking.getUserId() == userId) {
-                result[index++] = booking;
-            }
-        }
-
-        return result;
+    public List<Booking> findUserBooking(long userId) {
+        return bookingRepository.findByUserId(userId);
     }
 
-    private long countActive(Booking[] bookings) {
+    private long countActive(List<Booking> bookings) {
         long count = 0;
 
         for (Booking booking : bookings) {
@@ -112,10 +100,10 @@ public class BookingService {
         return count;
     }
 
-    private Booking findConflicts(long resourceId, TimeSlot slot) {
-        Booking[] all = bookingRepository.findAll();
+    private Booking findConflicts(long resourceId, LocalDate date, TimeSlot slot) {
+        List<Booking> all = bookingRepository.findByResourceId(resourceId);
         for (Booking booking : all) {
-            if (booking.getResourceId() == resourceId && booking.getStatus() == BookingStatus.CONFIRMED && booking.getSlot().overlaps(slot)) {
+            if (booking.getStatus() == BookingStatus.CONFIRMED && booking.getDate().equals(date) && booking.getSlot().overlaps(slot)) {
                 return booking;
             }
         }
