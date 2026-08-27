@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class ResourceRepositoryTest {
-    private ResourceRepository repository;
+public class ResourcesRepositoryTest {
+    private ResourcesRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new ResourceRepository();
+        repository = new ResourcesRepository();
     }
 
     @Test

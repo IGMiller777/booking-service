@@ -1,4 +1,4 @@
-package com.igmiller.booking.domain;
+package com.igmiller.booking.service;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

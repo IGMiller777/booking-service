@@ -3,8 +3,11 @@ package com.igmiller.booking.service;
 import com.igmiller.booking.domain.Booking;
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.*;
+import com.igmiller.booking.repository.BookingRepository;
 import com.igmiller.booking.repository.BookingsRepository;
 import com.igmiller.booking.repository.Repository;
+import com.igmiller.booking.repository.ResourceRepository;
+import com.igmiller.booking.repository.file.FileBookingRepository;
 
 import java.time.LocalDate;
 import java.util.Date;
@@ -14,11 +17,11 @@ public class BookingService {
 
     private static final int MAX_ACTIVE_BOOKINGS_PER_USER = 5;
 
-    private final BookingsRepository bookingRepository;
-    private final Repository<Resource, Long> resourceRepository;
+    private final BookingRepository bookingRepository;
+    private final ResourceRepository resourceRepository;
     private final PricingService pricingService;
 
-    public BookingService(BookingsRepository bookingRepository, Repository<Resource, Long> resourceRepository, PricingService pricingService) {
+    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, PricingService pricingService) {
         this.bookingRepository = bookingRepository;
 
         this.resourceRepository = resourceRepository;

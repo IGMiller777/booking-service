@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UserRepositoryTest {
-    private UserRepository repository;
+public class UsersRepositoryTest {
+    private UsersRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new UserRepository();
+        repository = new UsersRepository();
     }
 
     @Test

@@ -1,12 +1,12 @@
 package com.igmiller.booking.service;
 
 import com.igmiller.booking.domain.User;
-import com.igmiller.booking.repository.Repository;
+import com.igmiller.booking.repository.UserRepository;
 
 public class UserService {
-    public final Repository<User, Long> userRepository;
+    public final UserRepository userRepository;
 
-    public UserService(Repository<User, Long> userRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

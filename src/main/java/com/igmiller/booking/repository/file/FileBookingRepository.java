@@ -1,12 +1,12 @@
 package com.igmiller.booking.repository.file;
 
 import com.igmiller.booking.domain.Booking;
+import com.igmiller.booking.repository.BookingRepository;
 import com.igmiller.booking.repository.BookingsRepository;
-import com.igmiller.booking.repository.Repository;
 
 import java.util.List;
 
-public class FileBookingRepository implements Repository<Booking, Long> {
+public class FileBookingRepository implements BookingRepository {
     private final Storage<Booking> storage;
     private final BookingsRepository cache;
 
@@ -43,11 +43,13 @@ public class FileBookingRepository implements Repository<Booking, Long> {
         return cache.findAll();
     }
 
-    public List<Booking> findByUserId(long userId) {
+    @Override
+    public List<Booking> findByUserId(Long userId) {
         return cache.findByUserId(userId);
     }
 
-    public List<Booking> findByResourceId(long resourceId) {
+    @Override
+    public List<Booking> findByResourceId(Long resourceId) {
         return cache.findByResourceId(resourceId);
     }
 

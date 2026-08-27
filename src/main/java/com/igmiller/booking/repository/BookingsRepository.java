@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class BookingsRepository implements Repository<Booking, Long> {
+public class BookingsRepository implements BookingRepository {
     private final Map<Long, Booking> bookingsById = new HashMap<>();
     private final Map<Long, List<Booking>> bookingsByUserId = new HashMap<>();
     private final Map<Long, List<Booking>> bookingsByResourceId = new HashMap<>();
@@ -27,12 +27,14 @@ public class BookingsRepository implements Repository<Booking, Long> {
         return bookingsById.get(id);
     }
 
-    public List<Booking> findByUserId(long userId) {
-        return bookingsByUserId.getOrDefault(userId, List.of());
+    @Override
+    public List<Booking> findByUserId(Long userId) {
+        return bookingsByUserId.get(userId);
     }
 
-    public List<Booking> findByResourceId(long resourceId) {
-        return bookingsByResourceId.getOrDefault(resourceId, List.of());
+    @Override
+    public List<Booking> findByResourceId(Long resourceId) {
+        return bookingsByResourceId.get(resourceId);
     }
 
     @Override
@@ -44,20 +46,20 @@ public class BookingsRepository implements Repository<Booking, Long> {
     public boolean delete(Long id) {
 
         Booking booking = bookingsById.get(id);
-        if(booking == null) {
+        if (booking == null) {
             return false;
         }
 
         bookingsById.remove(id);
 
-        List<Booking> userBookings =  bookingsByUserId.get(booking.getUserId());
-        if(userBookings != null) {
+        List<Booking> userBookings = bookingsByUserId.get(booking.getUserId());
+        if (userBookings != null) {
             userBookings.remove(booking);
         }
 
-        List<Booking> resourceBookings =  bookingsByResourceId.get(booking.getResourceId());
+        List<Booking> resourceBookings = bookingsByResourceId.get(booking.getResourceId());
 
-        if(resourceBookings != null) {
+        if (resourceBookings != null) {
             resourceBookings.remove(booking);
         }
 

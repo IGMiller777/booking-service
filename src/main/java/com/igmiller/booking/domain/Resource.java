@@ -12,7 +12,7 @@ public class Resource implements Identifiable<Long> {
     private ResourceStatus resourceStatus = ResourceStatus.ACTIVE;
     private ResourceType resourceType = ResourceType.MEETING_ROOM;
 
-    private Resource(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType) {
+    private Resource(long id, String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus resourceStatus) {
         if (name == null || code == null || hourlyRate == null || name.isEmpty() || code.isEmpty()) {
             throw new IllegalArgumentException("Name and code cannot be empty");
         }
@@ -21,20 +21,34 @@ public class Resource implements Identifiable<Long> {
             throw new IllegalArgumentException("Capacity must be greater than 0");
         }
 
-        if(!Validators.isValidResourceCode(code)) {
+        if (!Validators.isValidResourceCode(code)) {
             throw new IllegalArgumentException("Invalid resource code");
         }
 
-        id = nextId++;
+        this.id = id;
         this.name = name;
         this.code = code;
         this.capacity = capacity;
         this.hourlyRate = hourlyRate;
         this.resourceType = resourceType;
+        this.resourceStatus = resourceStatus;
     }
 
-    public static Resource of(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType) {
-        return new Resource(name, code, capacity, hourlyRate, resourceType);
+    public static Resource restore(long id, String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus status) {
+        Resource resource = new Resource(id, name, code, capacity, hourlyRate, resourceType, status);
+
+        if (id >= nextId) {
+            nextId = id + 1;
+        }
+
+        return resource;
+    }
+
+    public static Resource of(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus status) {
+        Resource resource = new Resource(nextId, name, code, capacity, hourlyRate, resourceType, status);
+        nextId++;
+
+        return resource;
     }
 
     @Override

@@ -2,10 +2,10 @@ package com.igmiller.booking.cli;
 
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
+import com.igmiller.booking.service.ActionHistory;
 import com.igmiller.booking.service.BookingService;
 import com.igmiller.booking.service.ResourceService;
 import com.igmiller.booking.service.UserService;
-import com.igmiller.booking.util.TimeUtils;
 import com.igmiller.booking.util.Validators;
 
 import java.time.LocalDate;
@@ -47,7 +47,7 @@ public class ConsoleMenu {
         boolean running = true;
         while (running) {
             printMenu();
-            int choice = input.readInt("Selected: ", 0, 8);
+            int choice = input.readInt("Selected: ", 0, 9);
             switch (choice) {
                 case 1 -> handleLogin();
                 case 2 -> handleListResources();
@@ -123,7 +123,7 @@ public class ConsoleMenu {
         try {
             BookingResult result = bookingService.book(currentUser.getId(), resourceId, date, slot);
             String message = switch (result) {
-                case BookingResult.Success s -> "Booked Successfully - " + s.booking().getId();
+                case BookingResult.Success s -> "Booked Successfully - " + s.booking().getDate() + s.booking().getId();
                 case BookingResult.Conflict s -> "Busy - " + s.existing().getSlot();
             };
             System.out.println(message);

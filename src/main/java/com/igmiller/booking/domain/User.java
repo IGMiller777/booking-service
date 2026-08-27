@@ -9,7 +9,7 @@ public class User implements Identifiable<Long> {
     private final String email;
     private final Role role;
 
-    private User(String name, String email, Role role) {
+    private User(long id, String name, String email, Role role) {
         if (name.isEmpty()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
@@ -26,14 +26,27 @@ public class User implements Identifiable<Long> {
             throw new IllegalArgumentException("Email invalid format");
         }
 
-        id = nextId++;
+        this.id = id;
         this.name = name;
         this.email = email;
         this.role = role;
     }
 
+    public static User restore(long id, String name, String email, Role role) {
+        User user = new User(id, name, email, role);
+
+        if(id >= nextId) {
+            nextId = id + 1;
+        }
+
+        return user;
+    }
+
     public static User of(String name, String email, Role role) {
-        return new User(name, email, role);
+        User user = new User(nextId, name, email, role);
+        nextId++;
+
+        return user;
     }
 
     @Override
@@ -63,5 +76,16 @@ public class User implements Identifiable<Long> {
     @Override
     public Long getId() {
         return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+    public String getEmail() {
+        return email;
+    }
+
+    public Role getRole() {
+        return role;
     }
 }
