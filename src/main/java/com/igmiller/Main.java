@@ -40,9 +40,12 @@ public class Main {
         ResourceService repositoryService = new ResourceService(resourcesRepository);
 
         ActionHistory actionHistory = new ActionHistory();
+        NotificationSender notificationSender = new EmailSender();
+        NotificationService notificationService = new NotificationService(notificationSender);
 
-        ConsoleMenu consoleMenu = new ConsoleMenu(input, bookingService, userService, repositoryService, actionHistory);
+        ConsoleMenu consoleMenu = new ConsoleMenu(input, bookingService, userService, repositoryService, actionHistory, notificationService);
 
         consoleMenu.run();
+        notificationService.close();
     }
 }

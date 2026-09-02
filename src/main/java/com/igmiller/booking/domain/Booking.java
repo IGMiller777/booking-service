@@ -1,28 +1,28 @@
 package com.igmiller.booking.domain;
 
 import java.time.LocalDate;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Booking implements Identifiable<Long> {
-    private static long nextId = 1;
+    private static final AtomicLong nextId = new AtomicLong(1);
     private final long id;
     private final long userId;
     private final long resourceId;
-    private final LocalDate date;
     private final TimeSlot slot;
     private final Money price;
     private BookingStatus status;
 
-    private Booking(long id, long userId, long resourceId, LocalDate date, TimeSlot slot, Money price, BookingStatus status) {
+    private Booking(long id, long userId, long resourceId, TimeSlot slot, Money price, BookingStatus status) {
         if (slot == null) {
-            throw new IllegalArgumentException("slot cannot be null");
+            throw new IllegalArgumentException("Slot cannot be null");
         }
 
         if (price == null) {
-            throw new IllegalArgumentException("price cannot be null");
+            throw new IllegalArgumentException("Price cannot be null");
         }
 
-        if (date == null) {
-            throw new IllegalArgumentException("Date cannot be null");
+        if (status == null) {
+            throw new IllegalArgumentException("Status cannot be null");
         }
 
         if (resourceId <= 0 || userId <= 0) {
@@ -32,24 +32,18 @@ public class Booking implements Identifiable<Long> {
         this.id = id;
         this.userId = userId;
         this.resourceId = resourceId;
-        this.date = date;
         this.slot = slot;
         this.price = price;
         this.status = status;
     }
 
-    public static Booking of(long userId, long resourceId, LocalDate date, TimeSlot slot, Money price) {
-        Booking booking = new Booking(nextId, userId, resourceId, date, slot, price, BookingStatus.CONFIRMED);
-        nextId++;
-
-        return booking;
+    public static Booking of(long userId, long resourceId, TimeSlot slot, Money price) {
+        return new Booking(nextId.getAndIncrement(), userId, resourceId, slot, price, BookingStatus.CONFIRMED);
     }
 
-    public static Booking restore(long id, long userId, long resourceId, LocalDate date, TimeSlot slot, Money price, BookingStatus status) {
-        Booking booking = new Booking(id, userId, resourceId, date, slot, price, status);
-        if (id >= nextId) {
-            nextId = id + 1;
-        }
+    public static Booking restore(long id, long userId, long resourceId, TimeSlot slot, Money price, BookingStatus status) {
+        Booking booking = new Booking(id, userId, resourceId, slot, price, status);
+        nextId.updateAndGet(current -> Math.max(current, id + 1));
 
         return booking;
     }
@@ -77,8 +71,8 @@ public class Booking implements Identifiable<Long> {
 
     @Override
     public String toString() {
-        return "Booking{id: %d, resourceId: %d, date: %s, slot: %s, price: %s, status: %s}"
-                .formatted(id, resourceId, date, slot, price, status);
+        return "Booking{id: %d, resourceId: %d, slot: %s, price: %s, status: %s}"
+                .formatted(id, resourceId, slot, price, status);
     }
 
 
@@ -96,7 +90,7 @@ public class Booking implements Identifiable<Long> {
     }
 
     public LocalDate getDate() {
-        return date;
+        return slot.getDate();
     }
 
     public BookingStatus getStatus() {

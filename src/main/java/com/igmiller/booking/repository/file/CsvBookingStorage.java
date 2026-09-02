@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,26 +62,21 @@ public class CsvBookingStorage implements Storage<Booking> {
         long id = Long.parseLong(parts[0]);
         long userId = Long.parseLong(parts[1]);
         long resourceId = Long.parseLong(parts[2]);
-        LocalDate date = LocalDate.parse(parts[3]);
-        int startMinute = Integer.parseInt(parts[4]);
-        int endMinute = Integer.parseInt(parts[5]);
-        long priceMinor = Long.parseLong(parts[6]);
-        Currency currency = Currency.valueOf(parts[7]);
-        BookingStatus status = BookingStatus.valueOf(parts[8]);
+        LocalDateTime start = LocalDateTime.parse(parts[3]);
+        LocalDateTime end = LocalDateTime.parse(parts[4]);
+        long priceMinor = Long.parseLong(parts[5]);
+        Currency currency = Currency.valueOf(parts[6]);
+        BookingStatus status = BookingStatus.valueOf(parts[7]);
 
-        TimeSlot slot = TimeSlot.of(startMinute, endMinute);
-        Money price = Money.ofMinor(priceMinor, currency);
-
-        return Booking.restore(id, userId, resourceId, date, slot, price, status);
+        return Booking.restore(id, userId, resourceId, TimeSlot.of(start, end), Money.ofMinor(priceMinor, currency), status);
     }
 
     private String toCsvLine(Booking booking) {
         return booking.getId() + ";" +
                 booking.getUserId() + ";" +
                 booking.getResourceId() + ";" +
-                booking.getDate() + ";" +
-                booking.getSlot().getStartMinute() + ";" +
-                booking.getSlot().getEndMinute() + ";" +
+                booking.getSlot().getStart() + ";" +
+                booking.getSlot().getEnd() + ";" +
                 booking.getPrice().getAmount().movePointRight(2).longValue() + ";" +
                 booking.getPrice().getCurrency() + ";" +
                 booking.getStatus();
