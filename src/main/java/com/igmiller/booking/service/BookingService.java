@@ -4,8 +4,8 @@ import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.*;
 import com.igmiller.booking.repository.BookingRepository;
 import com.igmiller.booking.repository.ResourceRepository;
+import com.igmiller.booking.util.AppConfig;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -15,7 +15,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class BookingService {
     private final ConcurrentHashMap<Long, ReentrantLock> resourceLocks = new ConcurrentHashMap<>();
-    private static final int MAX_ACTIVE_BOOKINGS_PER_USER = 5;
+    private int maxActiveBookingsPerUser = 5;
 
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
@@ -25,11 +25,12 @@ public class BookingService {
     private final AtomicLong rejectedBookings = new AtomicLong();
     private final LongAdder concurrentRequests = new LongAdder();
 
-    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, PricingService pricingService) {
+    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, PricingService pricingService, AppConfig appConfig) {
         this.bookingRepository = bookingRepository;
 
         this.resourceRepository = resourceRepository;
         this.pricingService = pricingService;
+        this.maxActiveBookingsPerUser = appConfig.getInt("booking.max.per.user", 5);
     }
 
     public BookingResult book(long userId, long resourceId, TimeSlot slot) {
@@ -68,8 +69,8 @@ public class BookingService {
                 List<Booking> userBooking = findUserBooking(userId);
                 long activeCount = countActive(userBooking);
 
-                if (activeCount >= MAX_ACTIVE_BOOKINGS_PER_USER) {
-                    throw new BookingLimitExceededException(userId, MAX_ACTIVE_BOOKINGS_PER_USER);
+                if (activeCount >= maxActiveBookingsPerUser) {
+                    throw new BookingLimitExceededException(userId, maxActiveBookingsPerUser);
                 }
 
                 Booking conflict = findConflicts(resourceId, slot);

@@ -10,6 +10,7 @@ import com.igmiller.booking.repository.ResourceRepository;
 import com.igmiller.booking.repository.UserRepository;
 import com.igmiller.booking.repository.file.*;
 import com.igmiller.booking.service.*;
+import com.igmiller.booking.util.AppConfig;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,14 +18,16 @@ import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) {
-        InputReader input = new InputReader();
-        Path dataDir = Path.of("data");
+        AppConfig config = AppConfig.load(Path.of("config.properties"));
+        Path dataDir = config.getPath("data.dir", Path.of("data"));
+
         try {
             Files.createDirectories(dataDir);
         } catch (IOException e) {
             throw new RuntimeException("Cannot create dir for date", e);
         }
 
+        InputReader input = new InputReader();
         Storage<Booking> bookingStorage = new CsvBookingStorage(dataDir.resolve("bookings.csv"));
         BookingRepository bookingRepository = new FileBookingRepository(bookingStorage);
 
@@ -35,7 +38,7 @@ public class Main {
         UserRepository usersRepository = new FileUserRepository(userStorage);
 
         PricingService pricingService = new PricingService();
-        BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, pricingService);
+        BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, pricingService, config);
         UserService userService = new UserService(usersRepository);
         ResourceService repositoryService = new ResourceService(resourcesRepository);
 
