@@ -7,6 +7,8 @@ import com.igmiller.booking.domain.TimeSlot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class BookingRepositoryTest {
@@ -19,7 +21,7 @@ public class BookingRepositoryTest {
     }
 
     private Booking newBooking() {
-        return Booking.of(1L, 1L, TimeSlot.ofHours(9, 10), Money.of("500", Currency.EUR));
+        return Booking.of(1L, 1L, TimeSlot.ofHours(LocalDate.now(), 10, 12), Money.of("500", Currency.EUR));
     }
 
     @Test

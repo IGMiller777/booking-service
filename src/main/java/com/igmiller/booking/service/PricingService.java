@@ -17,7 +17,7 @@ public class PricingService {
     }
 
     private PricingStrategy chooseStrategy(TimeSlot slot) {
-        if (slot.duration() > DISCOUNT_THRESHOLD_MINUTES) {
+        if (slot.duration().toMinutes() > DISCOUNT_THRESHOLD_MINUTES) {
             return discounted;
         }
 

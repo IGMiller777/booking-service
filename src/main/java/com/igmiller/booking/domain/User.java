@@ -2,8 +2,10 @@ package com.igmiller.booking.domain;
 
 import com.igmiller.booking.util.Validators;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class User implements Identifiable<Long> {
-    private static long nextId = 1;
+    private static final AtomicLong nextId = new AtomicLong(1);
     private final long id;
     private final String name;
     private final String email;
@@ -34,19 +36,14 @@ public class User implements Identifiable<Long> {
 
     public static User restore(long id, String name, String email, Role role) {
         User user = new User(id, name, email, role);
-
-        if(id >= nextId) {
-            nextId = id + 1;
-        }
+        nextId.updateAndGet(current -> Math.max(current, id + 1));
 
         return user;
     }
 
     public static User of(String name, String email, Role role) {
-        User user = new User(nextId, name, email, role);
-        nextId++;
 
-        return user;
+        return new User(nextId.getAndIncrement(), name, email, role);
     }
 
     @Override

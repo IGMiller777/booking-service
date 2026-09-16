@@ -21,6 +21,6 @@ public enum ResourceType {
     }
 
     public boolean canBeBookedFor(TimeSlot slot) {
-        return slot.duration() >= minBookingMinutes;
+        return slot.duration().toMinutes() >= minBookingMinutes;
     }
 }

@@ -2,13 +2,11 @@ package com.igmiller.booking.cli;
 
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
-import com.igmiller.booking.service.ActionHistory;
-import com.igmiller.booking.service.BookingService;
-import com.igmiller.booking.service.ResourceService;
-import com.igmiller.booking.service.UserService;
+import com.igmiller.booking.service.*;
 import com.igmiller.booking.util.Validators;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
@@ -18,6 +16,7 @@ public class ConsoleMenu {
     private final UserService userService;
     private final ResourceService resourceService;
     private final ActionHistory actionHistory;
+    private final NotificationService notificationService;
 
     private static final String MENU = """
             Welcome to Booking Service
@@ -35,12 +34,13 @@ public class ConsoleMenu {
 
     private User currentUser;
 
-    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService, ActionHistory actionHistory) {
+    public ConsoleMenu(InputReader input, BookingService bookingService, UserService userService, ResourceService resourceService, ActionHistory actionHistory, NotificationService notificationService) {
         this.input = input;
         this.bookingService = bookingService;
         this.userService = userService;
         this.resourceService = resourceService;
         this.actionHistory = actionHistory;
+        this.notificationService = notificationService;
     }
 
     public void run() {
@@ -117,11 +117,28 @@ public class ConsoleMenu {
             return;
         }
 
-        int[] range = Validators.isValidTimeRange(input.readLine("Time (HH:MM-HH:MM): "));
-        TimeSlot slot = TimeSlot.of(range[0], range[1]);
+        LocalTime from;
+        LocalTime to;
 
         try {
-            BookingResult result = bookingService.book(currentUser.getId(), resourceId, date, slot);
+            from = LocalTime.parse(input.readLine("Start Time (HH:MM): "));
+            to = LocalTime.parse(input.readLine("End Time (HH:MM): "));
+        } catch (DateTimeParseException e) {
+            System.out.println("Invalid Time format. Try again!");
+            return;
+        }
+
+        TimeSlot slot;
+
+        try {
+            slot = TimeSlot.of(date, from, to);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid Slot. Try again! " + e.getMessage());
+            return;
+        }
+
+        try {
+            BookingResult result = bookingService.book(currentUser.getId(), resourceId, slot);
             String message = switch (result) {
                 case BookingResult.Success s -> "Booked Successfully - " + s.booking().getDate() + s.booking().getId();
                 case BookingResult.Conflict s -> "Busy - " + s.existing().getSlot();
@@ -129,6 +146,7 @@ public class ConsoleMenu {
             System.out.println(message);
 
             actionHistory.record("Resource booked. (" + resourceId + ", " + slot.toString() + ")");
+            notificationService.notifyAsync(currentUser.getName(), "Resource:" + resourceId + ", " + slot.toString() + "booked!");
         } catch (BookingServiceException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {
