@@ -3,7 +3,6 @@ package com.igmiller.booking.cli;
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
 import com.igmiller.booking.service.*;
-import com.igmiller.booking.util.Validators;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

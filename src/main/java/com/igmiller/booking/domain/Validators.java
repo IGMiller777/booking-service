@@ -1,4 +1,4 @@
-package com.igmiller.booking.util;
+package com.igmiller.booking.domain;
 
 import java.util.regex.Pattern;
 

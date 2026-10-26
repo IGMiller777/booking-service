@@ -76,7 +76,7 @@ public final class TimeSlot implements Comparable<TimeSlot> {
         return start.isBefore(other.end) && other.start.isBefore(end);
     }
 
-    public boolean contain(LocalDateTime moment) {
+    public boolean contains(LocalDateTime moment) {
         return !moment.isBefore(start) && moment.isBefore(end);
     }
 

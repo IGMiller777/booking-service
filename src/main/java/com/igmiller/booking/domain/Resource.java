@@ -1,7 +1,5 @@
 package com.igmiller.booking.domain;
 
-import com.igmiller.booking.util.Validators;
-
 public class Resource implements Identifiable<Long> {
     private static long nextId = 1;
     private final long id;

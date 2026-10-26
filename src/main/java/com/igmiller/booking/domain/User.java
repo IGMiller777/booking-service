@@ -1,7 +1,5 @@
 package com.igmiller.booking.domain;
 
-import com.igmiller.booking.util.Validators;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 public class User implements Identifiable<Long> {
