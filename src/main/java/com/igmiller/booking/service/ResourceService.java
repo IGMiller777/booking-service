@@ -1,14 +1,14 @@
 package com.igmiller.booking.service;
 
 import com.igmiller.booking.domain.Resource;
-import com.igmiller.booking.repository.Repository;
+import com.igmiller.booking.repository.ResourceRepository;
 
 import java.util.List;
 
 public class ResourceService {
-    private final Repository<Resource, Long> resourceRepository;
+    private final ResourceRepository resourceRepository;
 
-    public ResourceService(Repository<Resource, Long> resourceRepository) {
+    public ResourceService(ResourceRepository resourceRepository) {
         this.resourceRepository = resourceRepository;
     }
 

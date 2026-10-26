@@ -1,10 +1,13 @@
-package com.igmiller.booking.util;
+package com.igmiller.booking.domain;
 
 import java.util.regex.Pattern;
 
-public final class Validators {
+final class Validators {
     private static final Pattern RESOURCE_CODE = Pattern.compile("^[A-Z]{2,6}-\\d{2,4}$");
     private static final Pattern EMAIL = Pattern.compile("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$");
+
+    private Validators() {
+    }
 
     public static boolean isValidResourceCode(String resourceCode) {
         if (resourceCode == null) {

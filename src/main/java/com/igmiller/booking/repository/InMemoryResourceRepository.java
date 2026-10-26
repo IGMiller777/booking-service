@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ResourcesRepository implements ResourceRepository {
+public class InMemoryResourceRepository implements ResourceRepository {
     private final Map<Long, Resource> resourcesById = new HashMap<>();
     private final Map<String, Resource> resourcesByCode = new HashMap<>();
 
@@ -24,6 +24,7 @@ public class ResourcesRepository implements ResourceRepository {
         return resourcesById.get(id);
     }
 
+    @Override
     public Resource findByCode(String code) {
         return resourcesByCode.get(code);
     }

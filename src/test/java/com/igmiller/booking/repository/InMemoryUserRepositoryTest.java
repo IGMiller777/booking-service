@@ -7,16 +7,16 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UsersRepositoryTest {
-    private UsersRepository repository;
+class InMemoryUserRepositoryTest {
+    private InMemoryUserRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new UsersRepository();
+        repository = new InMemoryUserRepository();
     }
 
     @Test
-    void save_shouldMakeEntityFindableById_whenEntityIsNew() {
+    void save_shouldMakeUserFindableById_whenUserIsNew() {
         User user = User.of("Ivan", "ivan@admin.com", Role.USER);
 
         repository.save(user);
@@ -35,13 +35,13 @@ public class UsersRepositoryTest {
     }
 
     @Test
-    void shouldReturnNull_whenEntityIsNotFound() {
+    void findById_shouldReturnNull_whenUserDoesNotExist() {
         User user = repository.findById(999L);
         assertNull(user);
     }
 
     @Test
-    void shouldDeleteUser() {
+    void delete_shouldRemoveUser() {
         User user = User.of("Ivan", "ivan@admin.com", Role.USER);
         repository.save(user);
 

@@ -1,24 +1,29 @@
 package com.igmiller.booking.service;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.Objects;
+import java.util.concurrent.*;
 
 public class NotificationService implements AutoCloseable {
-    private final ExecutorService executor = Executors.newFixedThreadPool(4);
+    private static final System.Logger LOG = System.getLogger(NotificationService.class.getName());
+    private static final int TIMEOUT_SECONDS = 5;
+    private final ExecutorService executor = Executors.newFixedThreadPool(4, r -> {
+        Thread t = new Thread(r, "notification-worker");
+        t.setDaemon(true);
+        return t;
+    });
     private final NotificationSender sender;
 
-    public NotificationService(NotificationSender notificationSender) {
-        this.sender = notificationSender;
+    public NotificationService(NotificationSender sender) {
+        this.sender = Objects.requireNonNull(sender, "sender");
     }
 
     public CompletableFuture<Void> notifyAsync(String recipient, String message) {
         return CompletableFuture
-                .runAsync(() -> sender.send(recipient, message))
-                .orTimeout(5, TimeUnit.SECONDS)
+                .runAsync(() -> sender.send(recipient, message), executor)
+                .orTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .exceptionally(ex -> {
-                    System.out.println("Sending message to " + recipient + ": " + ex.getMessage());
+                    Throwable cause = (ex instanceof CompletionException && ex.getCause() != null) ? ex.getCause() : ex;
+                    LOG.log(System.Logger.Level.WARNING, "Failed to send notification to " + recipient, cause);
                     return null;
                 });
     }

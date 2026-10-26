@@ -21,7 +21,7 @@ public final class TimeSlot implements Comparable<TimeSlot> {
             throw new IllegalArgumentException("Start and end time must not be null");
         }
 
-        if (end.isBefore(start)) {
+        if (!end.isAfter(start)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 
@@ -76,7 +76,7 @@ public final class TimeSlot implements Comparable<TimeSlot> {
         return start.isBefore(other.end) && other.start.isBefore(end);
     }
 
-    public boolean contain(LocalDateTime moment) {
+    public boolean contains(LocalDateTime moment) {
         return !moment.isBefore(start) && moment.isBefore(end);
     }
 

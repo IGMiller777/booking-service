@@ -1,19 +1,15 @@
 package com.igmiller.booking.domain;
 
 public enum ResourceType {
-    MEETING_ROOM("Speaking Room", 30, true),
-    DESK("Working Room", 15, false),
-    EQUIPMENT("Equipment", 60, false),
-    COURT("Court", 60, true);
+    MEETING_ROOM(30),
+    DESK(30),
+    EQUIPMENT(60),
+    COURT(60);
 
-    private final String displayName;
     private final int minBookingMinutes;
-    private final boolean requireCapacity;
 
-    ResourceType(String displayName, int minBookingMinutes, boolean requireCapacity) {
-        this.displayName = displayName;
+    ResourceType(int minBookingMinutes) {
         this.minBookingMinutes = minBookingMinutes;
-        this.requireCapacity = requireCapacity;
     }
 
     public int getMinBookingMinutes() {

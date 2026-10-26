@@ -4,7 +4,7 @@ import com.igmiller.booking.domain.User;
 import com.igmiller.booking.repository.UserRepository;
 
 public class UserService {
-    public final UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;

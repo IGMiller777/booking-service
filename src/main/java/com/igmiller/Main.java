@@ -15,6 +15,7 @@ import com.igmiller.booking.util.AppConfig;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
 
 public class Main {
     public static void main(String[] args) {
@@ -38,7 +39,7 @@ public class Main {
         UserRepository usersRepository = new FileUserRepository(userStorage);
 
         PricingService pricingService = new PricingService();
-        BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, pricingService, config);
+        BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, usersRepository, pricingService, config, Clock.systemDefaultZone());
         UserService userService = new UserService(usersRepository);
         ResourceService repositoryService = new ResourceService(resourcesRepository);
 

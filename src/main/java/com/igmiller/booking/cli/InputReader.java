@@ -1,9 +1,20 @@
 package com.igmiller.booking.cli;
 
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class InputReader {
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
+
+    public InputReader() {
+        this(System.in);
+    }
+
+    InputReader(InputStream in) {
+        this.scanner = new Scanner(in, StandardCharsets.UTF_8);
+    }
 
     public int readInt(String prompt, int min, int max) {
         boolean isValidInput = false;
@@ -11,7 +22,7 @@ public class InputReader {
 
         while (!isValidInput) {
             System.out.println(prompt);
-            String line = scanner.nextLine().trim();
+            String line = nextLine();
 
             try {
                 int input = Integer.parseInt(line);
@@ -33,26 +44,30 @@ public class InputReader {
     public String readLine(String prompt) {
         System.out.print(prompt);
 
-        return scanner.nextLine().trim();
+        return nextLine();
     }
 
     public boolean readYesOrNo(String prompt) {
-        boolean isValidInput = false;
-        boolean result = false;
-
-        while (!isValidInput) {
+        while (true) {
             System.out.print(prompt);
-            String answer = scanner.nextLine().trim();
+            String answer = nextLine().toLowerCase(Locale.ROOT);
 
-            if (answer.contains("y")) {
-                isValidInput = true;
-                return true;
-            } else if (answer.contains("n")) {
-                isValidInput = true;
-                return false;
+            switch (answer) {
+                case "yes", "y", "д", "да":
+                    return true;
+                case "no", "n", "н", "нет":
+                    return false;
+                default:
+                    System.out.println("Invalid input. Enter Yes or No.");
             }
         }
+    }
 
-        return result;
+    private String nextLine() {
+        if (!scanner.hasNextLine()) {
+            throw new InputClosedException();
+        }
+
+        return scanner.nextLine().trim();
     }
 }

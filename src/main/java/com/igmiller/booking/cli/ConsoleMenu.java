@@ -2,8 +2,8 @@ package com.igmiller.booking.cli;
 
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
+import com.igmiller.booking.exception.SlotUnavailableException;
 import com.igmiller.booking.service.*;
-import com.igmiller.booking.util.Validators;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -11,6 +11,8 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class ConsoleMenu {
+    private static final System.Logger LOG = System.getLogger(ConsoleMenu.class.getName());
+
     private final InputReader input;
     private final BookingService bookingService;
     private final UserService userService;
@@ -45,21 +47,25 @@ public class ConsoleMenu {
 
     public void run() {
         boolean running = true;
-        while (running) {
-            printMenu();
-            int choice = input.readInt("Selected: ", 0, 9);
-            switch (choice) {
-                case 1 -> handleLogin();
-                case 2 -> handleListResources();
-                case 3 -> handleFreeSlots();
-                case 4 -> handleBookResource();
-                case 5 -> handleMyBookings();
-                case 6 -> handleCancelBooking();
-                case 7 -> handleReports();
-                case 8 -> handleAdmin();
-                case 9 -> handleShowHistory();
-                case 0 -> running = false;
+        try {
+            while (running) {
+                printMenu();
+                int choice = input.readInt("Selected: ", 0, 9);
+                switch (choice) {
+                    case 1 -> handleLogin();
+                    case 2 -> handleListResources();
+                    case 3 -> handleFreeSlots();
+                    case 4 -> handleBookResource();
+                    case 5 -> handleMyBookings();
+                    case 6 -> handleCancelBooking();
+                    case 7 -> handleReports();
+                    case 8 -> handleAdmin();
+                    case 9 -> handleShowHistory();
+                    case 0 -> running = false;
+                }
             }
+        } catch (InputClosedException e) {
+            LOG.log(System.Logger.Level.INFO, "Console input closed, shutting down");
         }
 
         System.out.println("Goodbye!");
@@ -97,7 +103,14 @@ public class ConsoleMenu {
         resources.sort(ResourceComparators.BY_NAME);
 
         for (Resource resource : resources) {
-            System.out.println("Resource ID: " + resource.getId());
+            System.out.printf("%d | %-8s | %-16s | limit %d | %s | %s%n",
+                    resource.getId(),
+                    resource.getCode(),
+                    resource.getName(),
+                    resource.getCapacity(),
+                    resource.getHourlyRate(),
+                    resource.getStatus()
+            );
         }
     }
 
@@ -138,20 +151,18 @@ public class ConsoleMenu {
         }
 
         try {
-            BookingResult result = bookingService.book(currentUser.getId(), resourceId, slot);
-            String message = switch (result) {
-                case BookingResult.Success s -> "Booked Successfully - " + s.booking().getDate() + s.booking().getId();
-                case BookingResult.Conflict s -> "Busy - " + s.existing().getSlot();
-            };
-            System.out.println(message);
+            Booking booking = bookingService.book(currentUser.getId(), resourceId, slot);
+            System.out.println("Booked Successfully - " + booking.getDate() + " #" + booking.getId());
 
             actionHistory.record("Resource booked. (" + resourceId + ", " + slot.toString() + ")");
-            notificationService.notifyAsync(currentUser.getName(), "Resource:" + resourceId + ", " + slot.toString() + "booked!");
+            notificationService.notifyAsync(currentUser.getEmail(), "Resource:" + resourceId + ", " + slot.toString() + "booked!");
+        } catch (SlotUnavailableException e) {
+            System.out.println("Busy - " + e.getConflictingSlot());
         } catch (BookingServiceException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {
             System.out.println("Error. Check logs");
-            e.printStackTrace();
+            LOG.log(System.Logger.Level.ERROR, "Unexpected error while booking", e);
         }
     }
 
