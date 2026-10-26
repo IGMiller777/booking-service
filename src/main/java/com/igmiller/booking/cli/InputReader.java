@@ -1,5 +1,6 @@
 package com.igmiller.booking.cli;
 
+import java.util.Locale;
 import java.util.Scanner;
 
 public class InputReader {
@@ -37,22 +38,18 @@ public class InputReader {
     }
 
     public boolean readYesOrNo(String prompt) {
-        boolean isValidInput = false;
-        boolean result = false;
-
-        while (!isValidInput) {
+        while (true) {
             System.out.print(prompt);
-            String answer = scanner.nextLine().trim();
+            String answer = scanner.nextLine().trim().toLowerCase(Locale.ROOT);
 
-            if (answer.contains("y")) {
-                isValidInput = true;
-                return true;
-            } else if (answer.contains("n")) {
-                isValidInput = true;
-                return false;
+            switch (answer) {
+                case "yes", "y", "д", "да":
+                    return true;
+                case "no", "n", "н", "нет":
+                    return false;
+                default:
+                    System.out.println("Invalid input. Enter Yes or No.");
             }
         }
-
-        return result;
     }
 }

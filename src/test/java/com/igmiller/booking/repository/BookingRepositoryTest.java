@@ -34,6 +34,13 @@ public class BookingRepositoryTest {
     }
 
     @Test
+    void should_returnNull_ifNoExists() {
+        Booking booking = repository.findById(1L);
+
+        assertNull(booking);
+    }
+
+    @Test
     void should_replaceExisting_ifExists() {
         Booking booking = newBooking();
 
@@ -42,13 +49,24 @@ public class BookingRepositoryTest {
         repository.save(booking);
 
         assertEquals(1, repository.findAll().size());
+        assertEquals(1, repository.findByUserId(1L).size());
+        assertEquals(1, repository.findByResourceId(1L).size());
     }
 
     @Test
-    void should_returnNull_ifNoExists() {
-        Booking booking = repository.findById(1L);
+    void delete_shouldRemoveBookingFromAllIndexes() {
+        Booking booking = newBooking();
+        repository.save(booking);
 
-        assertNull(booking);
+        repository.delete(booking.getId());
+
+        assertNull(repository.findById(booking.getId()));
+        assertTrue(repository.findByUserId(1L).isEmpty());
+        assertTrue(repository.findByResourceId(1L).isEmpty());
     }
 
+    @Test
+    void findByUserId_shouldReturnEmptyList_whenUserHasNoBookings() {
+        assertTrue(repository.findByUserId(999L).isEmpty());
+    }
 }

@@ -97,7 +97,14 @@ public class ConsoleMenu {
         resources.sort(ResourceComparators.BY_NAME);
 
         for (Resource resource : resources) {
-            System.out.println("Resource ID: " + resource.getId());
+            System.out.printf("%d | %-8s | %-16s | limit %d | %s | %s%n",
+                    resource.getId(),
+                    resource.getCode(),
+                    resource.getName(),
+                    resource.getCapacity(),
+                    resource.getHourlyRate(),
+                    resource.getStatus()
+            );
         }
     }
 
@@ -146,7 +153,7 @@ public class ConsoleMenu {
             System.out.println(message);
 
             actionHistory.record("Resource booked. (" + resourceId + ", " + slot.toString() + ")");
-            notificationService.notifyAsync(currentUser.getName(), "Resource:" + resourceId + ", " + slot.toString() + "booked!");
+            notificationService.notifyAsync(currentUser.getEmail(), "Resource:" + resourceId + ", " + slot.toString() + "booked!");
         } catch (BookingServiceException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {

@@ -2,22 +2,22 @@ package com.igmiller.booking.repository;
 
 import com.igmiller.booking.domain.Booking;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class BookingsRepository implements BookingRepository {
     private final Map<Long, Booking> bookingsById = new HashMap<>();
-    private final Map<Long, List<Booking>> bookingsByUserId = new HashMap<>();
-    private final Map<Long, List<Booking>> bookingsByResourceId = new HashMap<>();
+    private final Map<Long, Set<Booking>> bookingsByUserId = new HashMap<>();
+    private final Map<Long, Set<Booking>> bookingsByResourceId = new HashMap<>();
 
     @Override
     public Booking save(Booking booking) {
-        bookingsById.put(booking.getId(), booking);
+        Booking previous = bookingsById.put(booking.getId(), booking);
+        if (previous != null) {
+            removeFromIndexes(previous);
+        }
 
-        bookingsByUserId.computeIfAbsent(booking.getUserId(), id -> new ArrayList<>()).add(booking);
-        bookingsByResourceId.computeIfAbsent(booking.getResourceId(), id -> new ArrayList<>()).add(booking);
+        bookingsByUserId.computeIfAbsent(booking.getUserId(), id -> new LinkedHashSet<>()).add(booking);
+        bookingsByResourceId.computeIfAbsent(booking.getResourceId(), id -> new LinkedHashSet<>()).add(booking);
 
         return booking;
     }
@@ -29,12 +29,12 @@ public class BookingsRepository implements BookingRepository {
 
     @Override
     public List<Booking> findByUserId(Long userId) {
-        return bookingsByUserId.get(userId);
+        return new ArrayList<>(bookingsByUserId.getOrDefault(userId, Set.of()));
     }
 
     @Override
     public List<Booking> findByResourceId(Long resourceId) {
-        return bookingsByResourceId.get(resourceId);
+        return new ArrayList<>(bookingsByResourceId.getOrDefault(resourceId, Set.of()));
     }
 
     @Override
@@ -44,25 +44,25 @@ public class BookingsRepository implements BookingRepository {
 
     @Override
     public boolean delete(Long id) {
-
-        Booking booking = bookingsById.get(id);
+        Booking booking = bookingsById.remove(id);
         if (booking == null) {
             return false;
         }
 
-        bookingsById.remove(id);
+        removeFromIndexes(booking);
 
-        List<Booking> userBookings = bookingsByUserId.get(booking.getUserId());
-        if (userBookings != null) {
+        return true;
+    }
+
+    private void removeFromIndexes(Booking booking) {
+        Set<Booking> userBookings = bookingsByUserId.get(booking.getUserId());
+        if(userBookings != null) {
             userBookings.remove(booking);
         }
 
-        List<Booking> resourceBookings = bookingsByResourceId.get(booking.getResourceId());
-
-        if (resourceBookings != null) {
+        Set<Booking> resourceBookings = bookingsByResourceId.get(booking.getResourceId());
+        if(resourceBookings != null) {
             resourceBookings.remove(booking);
         }
-
-        return true;
     }
 }

@@ -13,13 +13,9 @@ public class HourlyPricingStrategy implements PricingStrategy {
     public Money calculate(Resource resource, TimeSlot timeSlot) {
         long rawMinutes = timeSlot.duration().toMinutes();
         long roundedMinutes = roundUpTo15(rawMinutes);
-
         BigDecimal hours = BigDecimal.valueOf(roundedMinutes).divide(BigDecimal.valueOf(60), 10, RoundingMode.HALF_UP);
-        BigDecimal rawPrice = resource.getHourlyRate().toBigDecimal().multiply(hours);
-        BigDecimal finalPrice = rawPrice.setScale(2, RoundingMode.HALF_UP);
 
-        return Money.of(finalPrice);
-
+        return resource.getHourlyRate().multiply(hours);
     }
 
     private long roundUpTo15(long minutes) {

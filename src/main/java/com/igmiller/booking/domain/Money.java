@@ -13,10 +13,6 @@ public final class Money {
         this.currency = currency;
     }
 
-    public static Money of(BigDecimal finalPrice) {
-        return new Money(finalPrice, Currency.USD);
-    }
-
     public static Money of(BigDecimal amount, Currency currency) {
         return new Money(amount, currency);
     }

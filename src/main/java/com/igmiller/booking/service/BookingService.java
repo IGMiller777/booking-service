@@ -30,7 +30,7 @@ public class BookingService {
 
         this.resourceRepository = resourceRepository;
         this.pricingService = pricingService;
-        this.maxActiveBookingsPerUser = appConfig.getInt("booking.max.per.user", 5);
+        this.maxActiveBookingsPerUser = appConfig.getInt("bookings.max.per.user", 5);
     }
 
     public BookingResult book(long userId, long resourceId, TimeSlot slot) {
