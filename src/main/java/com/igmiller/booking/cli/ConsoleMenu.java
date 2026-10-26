@@ -47,21 +47,25 @@ public class ConsoleMenu {
 
     public void run() {
         boolean running = true;
-        while (running) {
-            printMenu();
-            int choice = input.readInt("Selected: ", 0, 9);
-            switch (choice) {
-                case 1 -> handleLogin();
-                case 2 -> handleListResources();
-                case 3 -> handleFreeSlots();
-                case 4 -> handleBookResource();
-                case 5 -> handleMyBookings();
-                case 6 -> handleCancelBooking();
-                case 7 -> handleReports();
-                case 8 -> handleAdmin();
-                case 9 -> handleShowHistory();
-                case 0 -> running = false;
+        try {
+            while (running) {
+                printMenu();
+                int choice = input.readInt("Selected: ", 0, 9);
+                switch (choice) {
+                    case 1 -> handleLogin();
+                    case 2 -> handleListResources();
+                    case 3 -> handleFreeSlots();
+                    case 4 -> handleBookResource();
+                    case 5 -> handleMyBookings();
+                    case 6 -> handleCancelBooking();
+                    case 7 -> handleReports();
+                    case 8 -> handleAdmin();
+                    case 9 -> handleShowHistory();
+                    case 0 -> running = false;
+                }
             }
+        } catch (InputClosedException e) {
+            LOG.log(System.Logger.Level.INFO, "Console input closed, shutting down");
         }
 
         System.out.println("Goodbye!");
