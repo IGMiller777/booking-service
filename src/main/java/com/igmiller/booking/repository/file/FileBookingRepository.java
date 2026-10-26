@@ -2,17 +2,17 @@ package com.igmiller.booking.repository.file;
 
 import com.igmiller.booking.domain.Booking;
 import com.igmiller.booking.repository.BookingRepository;
-import com.igmiller.booking.repository.BookingsRepository;
+import com.igmiller.booking.repository.InMemoryBookingRepository;
 
 import java.util.List;
 
 public class FileBookingRepository implements BookingRepository {
     private final Storage<Booking> storage;
-    private final BookingsRepository cache;
+    private final InMemoryBookingRepository cache;
 
     public FileBookingRepository(Storage<Booking> storage) {
         this.storage = storage;
-        this.cache = new BookingsRepository();
+        this.cache = new InMemoryBookingRepository();
 
         for (Booking booking : storage.loadAll()) {
             cache.save(booking);

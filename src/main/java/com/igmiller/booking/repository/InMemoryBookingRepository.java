@@ -4,7 +4,7 @@ import com.igmiller.booking.domain.Booking;
 
 import java.util.*;
 
-public class BookingsRepository implements BookingRepository {
+public class InMemoryBookingRepository implements BookingRepository {
     private final Map<Long, Booking> bookingsById = new HashMap<>();
     private final Map<Long, Set<Booking>> bookingsByUserId = new HashMap<>();
     private final Map<Long, Set<Booking>> bookingsByResourceId = new HashMap<>();

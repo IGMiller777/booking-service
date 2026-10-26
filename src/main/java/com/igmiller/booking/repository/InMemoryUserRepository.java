@@ -5,7 +5,7 @@ import com.igmiller.booking.domain.User;
 import java.util.ArrayList;
 import java.util.List;
 
-public class UsersRepository implements UserRepository {
+public class InMemoryUserRepository implements UserRepository {
     private List<User> items = new ArrayList<User>();
 
     @Override

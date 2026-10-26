@@ -11,13 +11,13 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BookingRepositoryTest {
+public class InMemoryBookingRepositoryTest {
 
-    private BookingsRepository repository;
+    private InMemoryBookingRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new BookingsRepository();
+        repository = new InMemoryBookingRepository();
     }
 
     private Booking newBooking() {

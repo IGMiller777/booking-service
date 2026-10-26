@@ -2,9 +2,9 @@ package com.igmiller.booking.service;
 
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.*;
-import com.igmiller.booking.repository.BookingsRepository;
-import com.igmiller.booking.repository.ResourcesRepository;
-import com.igmiller.booking.repository.UsersRepository;
+import com.igmiller.booking.repository.InMemoryBookingRepository;
+import com.igmiller.booking.repository.InMemoryResourceRepository;
+import com.igmiller.booking.repository.InMemoryUserRepository;
 import com.igmiller.booking.util.AppConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class BookingServiceTest {
     private static final LocalDate TODAY = LocalDate.of(2026, 10, 26);
     private static final LocalDate TOMORROW = TODAY.plusDays(1);
 
-    private BookingsRepository bookings;
+    private InMemoryBookingRepository bookings;
     private BookingService service;
     private User ivan;
     private User petr;
@@ -33,9 +33,9 @@ class BookingServiceTest {
         // "сейчас" зафиксировано: 2026-10-26 12:00
         Clock clock = Clock.fixed(LocalDateTime.of(TODAY, java.time.LocalTime.NOON).toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
 
-        bookings = new BookingsRepository();
-        ResourcesRepository resources = new ResourcesRepository();
-        UsersRepository users = new UsersRepository();
+        bookings = new InMemoryBookingRepository();
+        InMemoryResourceRepository resources = new InMemoryResourceRepository();
+        InMemoryUserRepository users = new InMemoryUserRepository();
 
         ivan = users.save(User.of("Ivan", "ivan@example.com", Role.USER));
         petr = users.save(User.of("Petr", "petr@example.com", Role.USER));

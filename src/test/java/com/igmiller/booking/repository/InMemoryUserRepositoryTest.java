@@ -7,12 +7,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class UsersRepositoryTest {
-    private UsersRepository repository;
+public class InMemoryUserRepositoryTest {
+    private InMemoryUserRepository repository;
 
     @BeforeEach
     void setUp() {
-        repository = new UsersRepository();
+        repository = new InMemoryUserRepository();
     }
 
     @Test
