@@ -10,6 +10,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,6 +26,7 @@ class BookingServiceTest {
     private static final LocalDate TOMORROW = TODAY.plusDays(1);
 
     private InMemoryBookingRepository bookings;
+    private InMemoryUserRepository users;
     private BookingService service;
     private User ivan;
     private User petr;
@@ -35,7 +40,7 @@ class BookingServiceTest {
 
         bookings = new InMemoryBookingRepository();
         InMemoryResourceRepository resources = new InMemoryResourceRepository();
-        InMemoryUserRepository users = new InMemoryUserRepository();
+        users = new InMemoryUserRepository();
 
         ivan = users.save(User.of("Ivan", "ivan@example.com", Role.USER));
         petr = users.save(User.of("Petr", "petr@example.com", Role.USER));
@@ -118,6 +123,45 @@ class BookingServiceTest {
         service.cancel(ivan.getId(), first.getId());
 
         assertDoesNotThrow(() -> book(petr, slot(TOMORROW, 10, 12)));
+    }
+
+    @Test
+    void book_shouldAllowOnlyOneBooking_whenManyUsersRaceForSameSlot() throws Exception {
+        int threads = 50;
+        List<User> racers = new ArrayList<>();
+        for (int i = 0; i < threads; i++) {
+            racers.add(users.save(User.of("Racer " + i, "racer" + i + "@example.com", Role.USER)));
+        }
+
+        TimeSlot contested = slot(TOMORROW, 10, 12);
+        CountDownLatch start = new CountDownLatch(1);
+        AtomicInteger successes = new AtomicInteger();
+        AtomicInteger conflicts = new AtomicInteger();
+        ExecutorService pool = Executors.newFixedThreadPool(threads);
+
+        try {
+            for (User racer : racers) {
+                pool.submit(() -> {
+                    start.await();
+                    try {
+                        book(racer, contested);
+                        successes.incrementAndGet();
+                    } catch (SlotUnavailableException e) {
+                        conflicts.incrementAndGet();
+                    }
+                    return null;
+                });
+            }
+
+            start.countDown();
+            pool.shutdown();
+            assertTrue(pool.awaitTermination(10, TimeUnit.SECONDS), "racers did not finish in time");
+        } finally {
+            pool.shutdownNow();
+        }
+
+        assertEquals(1, successes.get());
+        assertEquals(threads - 1, conflicts.get());
     }
 
     // ---- I8 ----

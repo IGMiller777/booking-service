@@ -11,7 +11,7 @@ import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class InMemoryBookingRepositoryTest {
+class InMemoryBookingRepositoryTest {
 
     private InMemoryBookingRepository repository;
 
@@ -25,7 +25,7 @@ public class InMemoryBookingRepositoryTest {
     }
 
     @Test
-    void shouldCreate() {
+    void save_shouldMakeBookingFindableById() {
         Booking booking = newBooking();
 
         repository.save(booking);
@@ -34,14 +34,14 @@ public class InMemoryBookingRepositoryTest {
     }
 
     @Test
-    void should_returnNull_ifNoExists() {
+    void findById_shouldReturnNull_whenBookingDoesNotExist() {
         Booking booking = repository.findById(1L);
 
         assertNull(booking);
     }
 
     @Test
-    void should_replaceExisting_ifExists() {
+    void save_shouldReplaceExisting_whenSameBookingSavedTwice() {
         Booking booking = newBooking();
 
         repository.save(booking);
