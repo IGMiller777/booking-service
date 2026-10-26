@@ -101,12 +101,22 @@ public class Resource implements Identifiable<Long> {
     }
 
     public void activate() {
-        if (this.resourceStatus == ResourceStatus.RETIRED || this.resourceStatus == ResourceStatus.MAINTENANCE) {
-            this.resourceStatus = ResourceStatus.ACTIVE;
-        }
+        requireNotRetired("activated");
+        this.resourceStatus = ResourceStatus.ACTIVE;
     }
 
-    public void deactivate() {
+    public void startMaintenance() {
+        requireNotRetired("moved to maintenance");
+        this.resourceStatus = ResourceStatus.MAINTENANCE;
+    }
+
+    public void retire() {
         this.resourceStatus = ResourceStatus.RETIRED;
+    }
+
+    private void requireNotRetired(String action) {
+        if (this.resourceStatus == ResourceStatus.RETIRED) {
+            throw new IllegalStateException("Retired resource " + code + " cannot be " + action);
+        }
     }
 }

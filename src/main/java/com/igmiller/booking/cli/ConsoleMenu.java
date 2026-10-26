@@ -2,6 +2,7 @@ package com.igmiller.booking.cli;
 
 import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
+import com.igmiller.booking.exception.SlotUnavailableException;
 import com.igmiller.booking.service.*;
 
 import java.time.LocalDate;
@@ -146,15 +147,13 @@ public class ConsoleMenu {
         }
 
         try {
-            BookingResult result = bookingService.book(currentUser.getId(), resourceId, slot);
-            String message = switch (result) {
-                case BookingResult.Success s -> "Booked Successfully - " + s.booking().getDate() + s.booking().getId();
-                case BookingResult.Conflict s -> "Busy - " + s.existing().getSlot();
-            };
-            System.out.println(message);
+            Booking booking = bookingService.book(currentUser.getId(), resourceId, slot);
+            System.out.println("Booked Successfully - " + booking.getDate() + " #" + booking.getId());
 
             actionHistory.record("Resource booked. (" + resourceId + ", " + slot.toString() + ")");
             notificationService.notifyAsync(currentUser.getEmail(), "Resource:" + resourceId + ", " + slot.toString() + "booked!");
+        } catch (SlotUnavailableException e) {
+            System.out.println("Busy - " + e.getConflictingSlot());
         } catch (BookingServiceException e) {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {

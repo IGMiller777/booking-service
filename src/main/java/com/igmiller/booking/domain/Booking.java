@@ -108,4 +108,12 @@ public class Booking implements Identifiable<Long> {
     public void cancel() {
         this.status = BookingStatus.CANCELLED;
     }
+
+    public void complete() {
+        if (this.status != BookingStatus.CONFIRMED) {
+            throw new IllegalStateException("Only a confirmed booking can be completed, but was " + status);
+        }
+
+        this.status = BookingStatus.COMPLETED;
+    }
 }

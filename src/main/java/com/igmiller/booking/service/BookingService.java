@@ -4,8 +4,12 @@ import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.*;
 import com.igmiller.booking.repository.BookingRepository;
 import com.igmiller.booking.repository.ResourceRepository;
+import com.igmiller.booking.repository.UserRepository;
 import com.igmiller.booking.util.AppConfig;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -15,49 +19,54 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class BookingService {
     private final ConcurrentHashMap<Long, ReentrantLock> resourceLocks = new ConcurrentHashMap<>();
-    private int maxActiveBookingsPerUser = 5;
+    private final int maxActiveBookingsPerUser;
+    private final Duration cancelWindow;
 
     private final BookingRepository bookingRepository;
     private final ResourceRepository resourceRepository;
+    private final UserRepository userRepository;
     private final PricingService pricingService;
+    private final Clock clock;
 
     private final AtomicLong totalBookings = new AtomicLong();
     private final AtomicLong rejectedBookings = new AtomicLong();
     private final LongAdder concurrentRequests = new LongAdder();
 
-    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, PricingService pricingService, AppConfig appConfig) {
+    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, UserRepository userRepository, PricingService pricingService, AppConfig appConfig, Clock clock) {
         this.bookingRepository = bookingRepository;
-
         this.resourceRepository = resourceRepository;
+        this.userRepository = userRepository;
         this.pricingService = pricingService;
+        this.clock = clock;
         this.maxActiveBookingsPerUser = appConfig.getInt("bookings.max.per.user", 5);
+        this.cancelWindow = Duration.ofHours(appConfig.getInt("bookings.cancel.window.hours", 2));
     }
 
-    public BookingResult book(long userId, long resourceId, TimeSlot slot) {
+    public Booking book(long userId, long resourceId, TimeSlot slot) {
         concurrentRequests.increment();
 
         try {
-            ReentrantLock lock = lockFor(resourceId);
-            boolean acquired;
+            ReentrantLock lock = acquireLock(resourceId);
 
             try {
-                acquired = lock.tryLock(2, TimeUnit.SECONDS);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                throw new ServiceBusyException("Waiting for lock interrupted");
-            }
+                LocalDateTime now = LocalDateTime.now(clock);
 
-            if (!acquired) {
-                throw new ServiceBusyException("Resource is busy by other operation");
-            }
+                // Only future
+                if (!slot.getStart().isAfter(now)) {
+                    throw new SlotInPastException(slot);
+                }
 
-            try {
+                if (userRepository.findById(userId) == null) {
+                    throw new UserNotFoundException(userId);
+                }
+
                 Resource resource = resourceRepository.findById(resourceId);
 
                 if (resource == null) {
                     throw new ResourceNotFoundException(resourceId);
                 }
 
+                // Only active
                 if (resource.getStatus() != ResourceStatus.ACTIVE) {
                     throw new ResourceUnavailableException(resourceId, resource.getStatus());
                 }
@@ -66,17 +75,17 @@ public class BookingService {
                     throw new SlotInvalidException(slot);
                 }
 
-                List<Booking> userBooking = findUserBooking(userId);
-                long activeCount = countActive(userBooking);
+                // No more than n in the future
+                long activeCount = countUpcomingConfirmed(findUserBooking(userId), now);
 
                 if (activeCount >= maxActiveBookingsPerUser) {
                     throw new BookingLimitExceededException(userId, maxActiveBookingsPerUser);
                 }
 
+                // No conflicts
                 Booking conflict = findConflicts(resourceId, slot);
                 if (conflict != null) {
-                    rejectedBookings.incrementAndGet();
-                    return new BookingResult.Conflict(conflict);
+                    throw new SlotUnavailableException(resourceId, conflict.getSlot());
                 }
 
                 Money price = pricingService.calculatePrice(resource, slot);
@@ -84,7 +93,7 @@ public class BookingService {
                 bookingRepository.save(booking);
                 totalBookings.incrementAndGet();
 
-                return new BookingResult.Success(booking);
+                return booking;
             } catch (BookingServiceException e) {
                 rejectedBookings.incrementAndGet();
                 throw e;
@@ -97,25 +106,18 @@ public class BookingService {
         }
     }
 
-    public BookingResult cancel(long userId, long bookingId) {
+    public Booking cancel(long userId, long bookingId) {
+        User actor = userRepository.findById(userId);
+        if (actor == null) {
+            throw new UserNotFoundException(userId);
+        }
+
         Booking booking = bookingRepository.findById(bookingId);
         if (booking == null) {
             throw new BookingNotFoundException(bookingId);
         }
 
-        ReentrantLock lock = lockFor(booking.getResourceId());
-        boolean acquired;
-
-        try {
-            acquired = lock.tryLock(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ServiceBusyException("Waiting for lock interrupted");
-        }
-
-        if (!acquired) {
-            throw new ServiceBusyException("Resource is busy by other operation");
-        }
+        ReentrantLock lock = acquireLock(booking.getResourceId());
 
         try {
             Booking current = bookingRepository.findById(bookingId);
@@ -124,33 +126,75 @@ public class BookingService {
                 throw new BookingNotFoundException(bookingId);
             }
 
-            if (current.getUserId() != userId) {
-                throw new CancellationNotAllowedException(bookingId);
+            // Foreign booking able to cancel only ADMIN
+            if (current.getUserId() != userId && actor.getRole() != Role.ADMIN) {
+                throw new CancellationNotAllowedException(bookingId, "booking belongs to another user");
             }
 
-            if (current.getStatus() == BookingStatus.CANCELLED) {
-                throw new CancellationNotAllowedException(bookingId);
+            if (current.getStatus() != BookingStatus.CONFIRMED) {
+                throw new CancellationNotAllowedException(bookingId, "booking is already " + current.getStatus());
             }
 
-            // TODO: I7 — правило 2 часов, после этапа 11
+            // No later that cancel window
+            LocalDateTime deadline = current.getSlot().getStart().minus(cancelWindow);
+            if (LocalDateTime.now(clock).isAfter(deadline)) {
+                throw new CancellationNotAllowedException(bookingId,
+                        "cancellation is allowed no later than " + cancelWindow.toHours() + " hours before the start");
+            }
+
             current.cancel();
             bookingRepository.save(current);
 
-            return new BookingResult.Success(current);
+            return current;
         } finally {
             lock.unlock();
         }
+    }
+
+    /**
+     * Move in COMPLETED all CONFIRMED-bookings, which slot closed.
+     *
+     * @return how much bookings moved in COMPLETED
+     */
+    public int completeFinishedBookings() {
+        LocalDateTime now = LocalDateTime.now(clock);
+        int completed = 0;
+
+        for (Booking booking : bookingRepository.findAll()) {
+            if (!isFinishedConfirmed(booking, now)) {
+                continue;
+            }
+
+            ReentrantLock lock = acquireLock(booking.getResourceId());
+            try {
+                Booking current = bookingRepository.findById(booking.getId());
+
+                if (current != null && isFinishedConfirmed(current, now)) {
+                    current.complete();
+                    bookingRepository.save(current);
+                    completed++;
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        return completed;
     }
 
     public List<Booking> findUserBooking(long userId) {
         return bookingRepository.findByUserId(userId);
     }
 
-    private long countActive(List<Booking> bookings) {
+    private boolean isFinishedConfirmed(Booking booking, LocalDateTime now) {
+        return booking.getStatus() == BookingStatus.CONFIRMED && !booking.getSlot().getEnd().isAfter(now);
+    }
+
+    private long countUpcomingConfirmed(List<Booking> bookings, LocalDateTime now) {
         long count = 0;
 
         for (Booking booking : bookings) {
-            if (booking.getStatus() == BookingStatus.CONFIRMED) {
+            if (booking.getStatus() == BookingStatus.CONFIRMED && booking.getSlot().getStart().isAfter(now)) {
                 count++;
             }
         }
@@ -167,6 +211,24 @@ public class BookingService {
         }
 
         return null;
+    }
+
+    private ReentrantLock acquireLock(long resourceId) {
+        ReentrantLock lock = lockFor(resourceId);
+        boolean acquired;
+
+        try {
+            acquired = lock.tryLock(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ServiceBusyException("Waiting for lock interrupted");
+        }
+
+        if (!acquired) {
+            throw new ServiceBusyException("Resource is busy by other operation");
+        }
+
+        return lock;
     }
 
     private ReentrantLock lockFor(long resourceId) {

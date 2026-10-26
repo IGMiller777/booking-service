@@ -7,5 +7,9 @@ public final class ResourceComparators {
 
     public static final Comparator<Resource> BY_CAPACITY_DESC = Comparator.comparingInt(Resource::getCapacity).reversed();
 
-    public static final Comparator<Resource> BY_PRICE_THEN_NAME = Comparator.comparing((Resource r) -> r.getHourlyRate().getAmount()).thenComparing(Resource::getName);
+    // Group by currency
+    public static final Comparator<Resource> BY_PRICE_THEN_NAME = Comparator
+            .comparing((Resource r) -> r.getHourlyRate().getCurrency())
+            .thenComparing(r -> r.getHourlyRate().getAmount())
+            .thenComparing(Resource::getName);
 }

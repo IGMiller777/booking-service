@@ -21,7 +21,7 @@ public final class TimeSlot implements Comparable<TimeSlot> {
             throw new IllegalArgumentException("Start and end time must not be null");
         }
 
-        if (end.isBefore(start)) {
+        if (!end.isAfter(start)) {
             throw new IllegalArgumentException("Start time must be before end time");
         }
 

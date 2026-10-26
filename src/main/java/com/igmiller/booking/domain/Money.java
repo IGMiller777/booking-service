@@ -9,7 +9,19 @@ public final class Money {
     private final Currency currency;
 
     private Money(BigDecimal amount, Currency currency) {
-        this.amount = new BigDecimal(String.valueOf(amount)).setScale(2, RoundingMode.HALF_UP);
+        if (amount == null) {
+            throw new IllegalArgumentException("Amount must not be null");
+        }
+
+        if (currency == null) {
+            throw new IllegalArgumentException("Currency must not be null");
+        }
+
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("Amount must not be negative: " + amount);
+        }
+
+        this.amount = amount.setScale(2, RoundingMode.HALF_UP);
         this.currency = currency;
     }
 

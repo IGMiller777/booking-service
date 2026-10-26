@@ -10,16 +10,20 @@ public class User implements Identifiable<Long> {
     private final Role role;
 
     private User(long id, String name, String email, Role role) {
-        if (name.isEmpty()) {
+        if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
 
-        if (email.isEmpty()) {
+        if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email cannot be empty");
         }
 
-        if (!email.contains("@") || !Validators.isValidEmail(email)) {
+        if (!Validators.isValidEmail(email)) {
             throw new IllegalArgumentException("Email invalid format");
+        }
+
+        if (role == null) {
+            throw new IllegalArgumentException("Role cannot be null");
         }
 
         this.id = id;

@@ -2,7 +2,7 @@ package com.igmiller.booking.domain;
 
 public enum ResourceType {
     MEETING_ROOM("Speaking Room", 30, true),
-    DESK("Working Room", 15, false),
+    DESK("Working Room", 30, false),
     EQUIPMENT("Equipment", 60, false),
     COURT("Court", 60, true);
 
