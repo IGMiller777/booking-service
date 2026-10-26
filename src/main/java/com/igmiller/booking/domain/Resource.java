@@ -1,7 +1,9 @@
 package com.igmiller.booking.domain;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public class Resource implements Identifiable<Long> {
-    private static long nextId = 1;
+    private static final AtomicLong nextId = new AtomicLong(1);
     private final long id;
     private final String name;
     private final String code;
@@ -35,18 +37,13 @@ public class Resource implements Identifiable<Long> {
     public static Resource restore(long id, String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus status) {
         Resource resource = new Resource(id, name, code, capacity, hourlyRate, resourceType, status);
 
-        if (id >= nextId) {
-            nextId = id + 1;
-        }
+        nextId.updateAndGet(current -> Math.max(current, id + 1));
 
         return resource;
     }
 
     public static Resource of(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus status) {
-        Resource resource = new Resource(nextId, name, code, capacity, hourlyRate, resourceType, status);
-        nextId++;
-
-        return resource;
+        return new Resource(nextId.getAndIncrement(), name, code, capacity, hourlyRate, resourceType, status);
     }
 
     @Override

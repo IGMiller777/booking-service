@@ -10,6 +10,8 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class ConsoleMenu {
+    private static final System.Logger LOG = System.getLogger(ConsoleMenu.class.getName());
+
     private final InputReader input;
     private final BookingService bookingService;
     private final UserService userService;
@@ -157,7 +159,7 @@ public class ConsoleMenu {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {
             System.out.println("Error. Check logs");
-            e.printStackTrace();
+            LOG.log(System.Logger.Level.ERROR, "Unexpected error while booking", e);
         }
     }
 

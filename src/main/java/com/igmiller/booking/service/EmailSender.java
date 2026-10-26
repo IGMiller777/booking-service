@@ -1,6 +1,8 @@
 package com.igmiller.booking.service;
 
 public class EmailSender implements NotificationSender {
+    private static final System.Logger LOG = System.getLogger(EmailSender.class.getName());
+
     @Override
     public void send(String recipient, String message) {
         try {
@@ -11,6 +13,6 @@ public class EmailSender implements NotificationSender {
             return;
         }
 
-        System.out.println("Sending email to " + recipient + ": " + message);
+        LOG.log(System.Logger.Level.INFO, "Sending email to {0}: {1}", recipient, message);
     }
 }
