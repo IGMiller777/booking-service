@@ -24,6 +24,7 @@ public class ResourcesRepository implements ResourceRepository {
         return resourcesById.get(id);
     }
 
+    @Override
     public Resource findByCode(String code) {
         return resourcesByCode.get(code);
     }

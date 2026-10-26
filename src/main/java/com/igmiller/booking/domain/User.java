@@ -18,11 +18,7 @@ public class User implements Identifiable<Long> {
             throw new IllegalArgumentException("Email cannot be empty");
         }
 
-        if (!email.contains("@")) {
-            throw new IllegalArgumentException("Email invalid format");
-        }
-
-        if(!Validators.isValidEmail(email)) {
+        if (!email.contains("@") || !Validators.isValidEmail(email)) {
             throw new IllegalArgumentException("Email invalid format");
         }
 

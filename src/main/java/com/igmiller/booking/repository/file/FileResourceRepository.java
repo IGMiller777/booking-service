@@ -38,6 +38,7 @@ public class FileResourceRepository implements ResourceRepository {
         return cache.findById(id);
     }
 
+    @Override
     public Resource findByCode(String code) {
         return cache.findByCode(code);
     }
