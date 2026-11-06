@@ -7,3 +7,7 @@ spring:
     url: jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
+booking:
+  max-active-per-user: 5
+  cancel-window: 2h
+  data-dir: /data
