@@ -2,6 +2,7 @@ package com.igmiller;
 
 import com.igmiller.booking.cli.ConsoleMenu;
 import com.igmiller.booking.cli.InputReader;
+import com.igmiller.booking.config.BookingProperties;
 import com.igmiller.booking.domain.Booking;
 import com.igmiller.booking.domain.Resource;
 import com.igmiller.booking.domain.User;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
+import java.time.Duration;
 
 public class Main {
     public static void main(String[] args) {
@@ -40,7 +42,13 @@ public class Main {
         HourlyPricingStrategy pricingStrategy = new HourlyPricingStrategy();
 
         PricingService pricingService = new PricingService(pricingStrategy, new DiscountedPricingStrategy(pricingStrategy));
-        BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, usersRepository, pricingService, config, Clock.systemDefaultZone());
+
+        BookingProperties properties = new BookingProperties(
+                config.getInt("bookings.max.per.user", 5),
+                Duration.ofHours(config.getInt("bookings.cancel.window.hours", 2)),
+                dataDir
+        );
+        BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, usersRepository, pricingService, properties, Clock.systemDefaultZone());
         UserService userService = new UserService(usersRepository);
         ResourceService repositoryService = new ResourceService(resourcesRepository);
 

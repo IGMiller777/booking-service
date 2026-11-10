@@ -1,8 +1,11 @@
 package com.igmiller.booking.service;
 
+import org.springframework.stereotype.Service;
+
 import java.util.Objects;
 import java.util.concurrent.*;
 
+@Service
 public class NotificationService implements AutoCloseable {
     private static final System.Logger LOG = System.getLogger(NotificationService.class.getName());
     private static final int TIMEOUT_SECONDS = 5;

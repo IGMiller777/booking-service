@@ -1,5 +1,8 @@
 package com.igmiller.booking.service;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class EmailSender implements NotificationSender {
     private static final System.Logger LOG = System.getLogger(EmailSender.class.getName());
 

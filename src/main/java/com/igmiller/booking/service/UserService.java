@@ -2,7 +2,9 @@ package com.igmiller.booking.service;
 
 import com.igmiller.booking.domain.User;
 import com.igmiller.booking.repository.UserRepository;
+import org.springframework.stereotype.Service;
 
+@Service
 public class UserService {
     private final UserRepository userRepository;
 
