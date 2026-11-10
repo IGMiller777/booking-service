@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 
 @Service
 public class NotificationService implements AutoCloseable {
-    private static final Logger log = LoggerFactory.getLogger(NotificationService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class);
     private static final int TIMEOUT_SECONDS = 5;
     private final ExecutorService executor = Executors.newFixedThreadPool(4, r -> {
         Thread t = new Thread(r, "notification-worker");

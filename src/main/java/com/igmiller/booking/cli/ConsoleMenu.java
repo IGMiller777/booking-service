@@ -13,7 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class ConsoleMenu {
-    private static final Logger log = LoggerFactory.getLogger(ConsoleMenu.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(ConsoleMenu.class);
 
     private final InputReader input;
     private final BookingService bookingService;
@@ -67,7 +67,7 @@ public class ConsoleMenu {
                 }
             }
         } catch (InputClosedException e) {
-            log.error("Console input closed, shutting down", e);
+            log.error("Console input closed, shutting down");
         }
 
         System.out.println("Goodbye!");

@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmailSender implements NotificationSender {
-    private static final Logger log = LoggerFactory.getLogger(EmailSender.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(EmailSender.class);
 
     @Override
     public void send(String recipient, String message) {
