@@ -37,8 +37,9 @@ public class Main {
 
         Storage<User> userStorage = new CsvUserStorage(dataDir.resolve("users.csv"));
         UserRepository usersRepository = new FileUserRepository(userStorage);
+        HourlyPricingStrategy pricingStrategy = new HourlyPricingStrategy();
 
-        PricingService pricingService = new PricingService();
+        PricingService pricingService = new PricingService(pricingStrategy, new DiscountedPricingStrategy(pricingStrategy));
         BookingService bookingService = new BookingService(bookingRepository, resourcesRepository, usersRepository, pricingService, config, Clock.systemDefaultZone());
         UserService userService = new UserService(usersRepository);
         ResourceService repositoryService = new ResourceService(resourcesRepository);

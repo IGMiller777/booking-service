@@ -49,7 +49,9 @@ class BookingServiceTest {
                 ResourceType.MEETING_ROOM, ResourceStatus.ACTIVE));
 
         AppConfig config = AppConfig.load(Path.of("no-such-config.properties"));
-        service = new BookingService(bookings, resources, users, new PricingService(), config, clock);
+
+        HourlyPricingStrategy pricingStrategy = new HourlyPricingStrategy();
+        service = new BookingService(bookings, resources, users, new PricingService(pricingStrategy, new DiscountedPricingStrategy(pricingStrategy)), config, clock);
     }
 
     private TimeSlot slot(LocalDate date, int from, int to) {

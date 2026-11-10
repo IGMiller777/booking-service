@@ -10,7 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class PricingServiceTest {
     private static final LocalDate DATE = LocalDate.of(2026, 11, 2);
-    private final PricingService pricing = new PricingService();
+    private final HourlyPricingStrategy pricingStrategy = new HourlyPricingStrategy();
+    private final PricingService pricing = new PricingService(pricingStrategy, new DiscountedPricingStrategy(pricingStrategy));
     private final Resource room = Resource.of("Room", "MR-101", 8, Money.of("100", Currency.USD),
             ResourceType.MEETING_ROOM, ResourceStatus.ACTIVE);
 
