@@ -91,8 +91,7 @@ public class BookingService {
                 }
 
                 Money price = pricingService.calculatePrice(resource, slot);
-                Booking booking = Booking.of(userId, resourceId, slot, price);
-                bookingRepository.save(booking);
+                Booking booking = bookingRepository.save(Booking.of(userId, resourceId, slot, price));
                 totalBookings.incrementAndGet();
 
                 return booking;

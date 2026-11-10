@@ -8,9 +8,13 @@ public class InMemoryBookingRepository implements BookingRepository {
     private final Map<Long, Booking> bookingsById = new HashMap<>();
     private final Map<Long, Set<Booking>> bookingsByUserId = new HashMap<>();
     private final Map<Long, Set<Booking>> bookingsByResourceId = new HashMap<>();
+    private long nextId = 1;
 
     @Override
-    public Booking save(Booking booking) {
+    public Booking save(Booking entity) {
+        Booking booking = entity.getId() == null ? entity.withId(nextId++) : entity;
+        nextId = Math.max(nextId, booking.getId() + 1);
+
         Booking previous = bookingsById.put(booking.getId(), booking);
         if (previous != null) {
             removeFromIndexes(previous);
@@ -56,12 +60,12 @@ public class InMemoryBookingRepository implements BookingRepository {
 
     private void removeFromIndexes(Booking booking) {
         Set<Booking> userBookings = bookingsByUserId.get(booking.getUserId());
-        if(userBookings != null) {
+        if (userBookings != null) {
             userBookings.remove(booking);
         }
 
         Set<Booking> resourceBookings = bookingsByResourceId.get(booking.getResourceId());
-        if(resourceBookings != null) {
+        if (resourceBookings != null) {
             resourceBookings.remove(booking);
         }
     }

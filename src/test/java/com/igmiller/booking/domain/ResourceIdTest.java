@@ -2,12 +2,7 @@ package com.igmiller.booking.domain;
 
 import org.junit.jupiter.api.Test;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ResourceIdTest {
 
@@ -17,23 +12,38 @@ class ResourceIdTest {
     }
 
     @Test
-    void of_shouldGenerateUniqueIds_underConcurrentCalls() {
-        Set<Long> ids = ConcurrentHashMap.newKeySet();
-        int count = 2_000;
-
-        IntStream.range(0, count).parallel().forEach(i -> ids.add(newResource().getId()));
-
-        assertEquals(count, ids.size());
+    void of_shouldCreateResourceWithoutId() {
+        assertNull(newResource().getId());
     }
 
     @Test
-    void restore_shouldMoveCounterPastRestoredId() {
-        long restoredId = newResource().getId() + 1_000;
-        Resource.restore(restoredId, "Room", "MR-102", 4, Money.of("100", Currency.USD),
+    void equals_shouldNotTreatTwoUnsavedResourcesAsEqual() {
+        assertNotEquals(newResource(), newResource());
+    }
+
+    @Test
+    void equals_shouldCompareById_whenIdsAreSet() {
+        Resource saved = newResource().withId(7L);
+        Resource sameIdOtherName = Resource.restore(7L, "Other", "MR-102", 2, Money.of("50", Currency.USD),
                 ResourceType.MEETING_ROOM, ResourceStatus.ACTIVE);
 
-        Resource next = newResource();
+        assertEquals(saved, sameIdOtherName);
+        assertEquals(saved.hashCode(), sameIdOtherName.hashCode());
+    }
 
-        assertTrue(next.getId() > restoredId);
+    @Test
+    void withId_shouldReturnCopyWithId_andKeepOriginalUntouched() {
+        Resource unsaved = newResource();
+
+        Resource saved = unsaved.withId(7L);
+
+        assertNull(unsaved.getId());
+        assertEquals(7L, saved.getId());
+        assertEquals(unsaved.getCode(), saved.getCode());
+    }
+
+    @Test
+    void restore_shouldRejectNonPositiveId() {
+        assertThrows(IllegalArgumentException.class, () -> newResource().withId(0L));
     }
 }

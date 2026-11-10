@@ -17,19 +17,16 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void save_shouldMakeUserFindableById_whenUserIsNew() {
-        User user = User.of("Ivan", "ivan@admin.com", Role.USER);
+        User saved = repository.save(User.of("Ivan", "ivan@admin.com", Role.USER));
 
-        repository.save(user);
-
-        assertEquals(user, repository.findById(user.getId()));
+        assertEquals(saved, repository.findById(saved.getId()));
     }
 
     @Test
     void save_shouldNotCreateDuplicate() {
-        User user = User.of("Ivan", "ivan@admin.com", Role.USER);
+        User saved = repository.save(User.of("Ivan", "ivan@admin.com", Role.USER));
 
-        repository.save(user);
-        repository.save(user);
+        repository.save(saved);
 
         assertEquals(1, repository.findAll().size());
     }
@@ -42,12 +39,20 @@ class InMemoryUserRepositoryTest {
 
     @Test
     void delete_shouldRemoveUser() {
-        User user = User.of("Ivan", "ivan@admin.com", Role.USER);
-        repository.save(user);
+        User saved = repository.save(User.of("Ivan", "ivan@admin.com", Role.USER));
 
-        boolean result = repository.delete(user.getId());
+        boolean result = repository.delete(saved.getId());
 
         assertTrue(result);
-        assertNull(repository.findById(user.getId()));
+        assertNull(repository.findById(saved.getId()));
+    }
+
+    @Test
+    void save_shouldAssignSequentialIds_whenUsersAreNew() {
+        User first = repository.save(User.of("Ivan", "ivan@admin.com", Role.USER));
+        User second = repository.save(User.of("Petr", "petr@admin.com", Role.USER));
+
+        assertEquals(1L, first.getId());
+        assertEquals(2L, second.getId());
     }
 }

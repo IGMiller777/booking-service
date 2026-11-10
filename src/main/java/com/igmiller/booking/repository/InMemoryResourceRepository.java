@@ -1,6 +1,6 @@
 package com.igmiller.booking.repository;
 
-import com.igmiller.booking.domain.*;
+import com.igmiller.booking.domain.Resource;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,9 +10,13 @@ import java.util.Map;
 public class InMemoryResourceRepository implements ResourceRepository {
     private final Map<Long, Resource> resourcesById = new HashMap<>();
     private final Map<String, Resource> resourcesByCode = new HashMap<>();
+    private long nextId = 1;
 
     @Override
-    public Resource save(Resource resource) {
+    public Resource save(Resource entity) {
+        Resource resource = entity.getId() == null ? entity.withId(nextId++) : entity;
+
+        nextId = Math.max(nextId, resource.getId() + 1);
         resourcesById.put(resource.getId(), resource);
         resourcesByCode.put(resource.getCode(), resource);
 
@@ -37,7 +41,7 @@ public class InMemoryResourceRepository implements ResourceRepository {
     @Override
     public boolean delete(Long id) {
         Resource resource = resourcesById.get(id);
-        if(resource == null) {
+        if (resource == null) {
             return false;
         }
 

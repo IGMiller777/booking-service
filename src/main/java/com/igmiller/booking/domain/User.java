@@ -1,15 +1,18 @@
 package com.igmiller.booking.domain;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Objects;
 
 public class User implements Identifiable<Long> {
-    private static final AtomicLong nextId = new AtomicLong(1);
-    private final long id;
+    private final Long id;
     private final String name;
     private final String email;
     private final Role role;
 
-    private User(long id, String name, String email, Role role) {
+    private User(Long id, String name, String email, Role role) {
+        if (id != null && id <= 0) {
+            throw new IllegalArgumentException("Id must be a positive integer");
+        }
+
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Name cannot be empty");
         }
@@ -33,20 +36,21 @@ public class User implements Identifiable<Long> {
     }
 
     public static User restore(long id, String name, String email, Role role) {
-        User user = new User(id, name, email, role);
-        nextId.updateAndGet(current -> Math.max(current, id + 1));
 
-        return user;
+        return new User(id, name, email, role);
+    }
+
+    public User withId(Long id) {
+        return restore(id, name, email, role);
     }
 
     public static User of(String name, String email, Role role) {
-
-        return new User(nextId.getAndIncrement(), name, email, role);
+        return new User(null, name, email, role);
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(id);
+        return Objects.hashCode(id);
     }
 
     @Override
@@ -60,7 +64,7 @@ public class User implements Identifiable<Long> {
         }
 
         User user = (User) o;
-        return id == user.id;
+        return id != null && id.equals(user.id);
     }
 
     @Override
@@ -76,6 +80,7 @@ public class User implements Identifiable<Long> {
     public String getName() {
         return name;
     }
+
     public String getEmail() {
         return email;
     }

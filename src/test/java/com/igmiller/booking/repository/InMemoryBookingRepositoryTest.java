@@ -1,9 +1,6 @@
 package com.igmiller.booking.repository;
 
-import com.igmiller.booking.domain.Booking;
-import com.igmiller.booking.domain.Money;
-import com.igmiller.booking.domain.Currency;
-import com.igmiller.booking.domain.TimeSlot;
+import com.igmiller.booking.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,11 +23,9 @@ class InMemoryBookingRepositoryTest {
 
     @Test
     void save_shouldMakeBookingFindableById() {
-        Booking booking = newBooking();
+        Booking saved = repository.save(newBooking());
 
-        repository.save(booking);
-
-        assertEquals(booking, repository.findById(booking.getId()));
+        assertEquals(saved, repository.findById(saved.getId()));
     }
 
     @Test
@@ -42,11 +37,10 @@ class InMemoryBookingRepositoryTest {
 
     @Test
     void save_shouldReplaceExisting_whenSameBookingSavedTwice() {
-        Booking booking = newBooking();
+        Booking saved = repository.save(newBooking());
 
-        repository.save(booking);
-        booking.cancel();
-        repository.save(booking);
+        saved.cancel();
+        repository.save(saved);
 
         assertEquals(1, repository.findAll().size());
         assertEquals(1, repository.findByUserId(1L).size());
@@ -55,12 +49,11 @@ class InMemoryBookingRepositoryTest {
 
     @Test
     void delete_shouldRemoveBookingFromAllIndexes() {
-        Booking booking = newBooking();
-        repository.save(booking);
+        Booking saved = repository.save(newBooking());
 
-        repository.delete(booking.getId());
+        repository.delete(saved.getId());
 
-        assertNull(repository.findById(booking.getId()));
+        assertNull(repository.findById(saved.getId()));
         assertTrue(repository.findByUserId(1L).isEmpty());
         assertTrue(repository.findByResourceId(1L).isEmpty());
     }
@@ -68,5 +61,26 @@ class InMemoryBookingRepositoryTest {
     @Test
     void findByUserId_shouldReturnEmptyList_whenUserHasNoBookings() {
         assertTrue(repository.findByUserId(999L).isEmpty());
+    }
+
+    @Test
+    void save_shouldAssignId_whenBookingIsNew() {
+        Booking booking = newBooking();
+
+        Booking saved = repository.save(booking);
+
+        assertNull(booking.getId());
+        assertEquals(1L, saved.getId());
+        assertEquals(booking.getSlot(), saved.getSlot());
+    }
+
+    @Test
+    void save_shouldContinueNumbering_afterRestoredId() {
+        repository.save(Booking.restore(10L, 1L, 1L, TimeSlot.ofHours(LocalDate.now(), 8, 9),
+                Money.of("250", Currency.EUR), BookingStatus.CONFIRMED));
+
+        Booking saved = repository.save(newBooking());
+
+        assertEquals(11L, saved.getId());
     }
 }

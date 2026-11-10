@@ -1,10 +1,9 @@
 package com.igmiller.booking.domain;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Objects;
 
 public class Resource implements Identifiable<Long> {
-    private static final AtomicLong nextId = new AtomicLong(1);
-    private final long id;
+    private final Long id;
     private final String name;
     private final String code;
     private final int capacity;
@@ -12,7 +11,11 @@ public class Resource implements Identifiable<Long> {
     private ResourceStatus resourceStatus = ResourceStatus.ACTIVE;
     private ResourceType resourceType = ResourceType.MEETING_ROOM;
 
-    private Resource(long id, String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus resourceStatus) {
+    private Resource(Long id, String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus resourceStatus) {
+        if (id != null && id <= 0) {
+            throw new IllegalArgumentException("Id must be a positive integer");
+        }
+
         if (name == null || code == null || hourlyRate == null || name.isEmpty() || code.isEmpty()) {
             throw new IllegalArgumentException("Name and code cannot be empty");
         }
@@ -35,15 +38,15 @@ public class Resource implements Identifiable<Long> {
     }
 
     public static Resource restore(long id, String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus status) {
-        Resource resource = new Resource(id, name, code, capacity, hourlyRate, resourceType, status);
+        return new Resource(id, name, code, capacity, hourlyRate, resourceType, status);
+    }
 
-        nextId.updateAndGet(current -> Math.max(current, id + 1));
-
-        return resource;
+    public Resource withId(Long id) {
+        return restore(id, name, code, capacity, hourlyRate, resourceType, resourceStatus);
     }
 
     public static Resource of(String name, String code, int capacity, Money hourlyRate, ResourceType resourceType, ResourceStatus status) {
-        return new Resource(nextId.getAndIncrement(), name, code, capacity, hourlyRate, resourceType, status);
+        return new Resource(null, name, code, capacity, hourlyRate, resourceType, status);
     }
 
     @Override
@@ -58,12 +61,12 @@ public class Resource implements Identifiable<Long> {
 
         Resource other = (Resource) o;
 
-        return id == other.id;
+        return id != null && id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(id);
+        return Objects.hashCode(id);
     }
 
     @Override

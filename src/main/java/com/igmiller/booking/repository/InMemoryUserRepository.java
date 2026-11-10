@@ -6,21 +6,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InMemoryUserRepository implements UserRepository {
-    private List<User> items = new ArrayList<User>();
+    private final List<User> items = new ArrayList<User>();
+    private long nextId = 1;
 
     @Override
     public User save(User entity) {
+        User user = entity.getId() == null ? entity.withId(nextId++) : entity;
+        nextId = Math.max(nextId, user.getId() + 1);
+
         for (int i = 0; i < items.size(); i++) {
             if (items.get(i).getId().equals(entity.getId())) {
-                items.set(i, entity);
+                items.set(i, user);
 
-                return entity;
+                return user;
             }
         }
 
-        items.add(entity);
+        items.add(user);
 
-        return entity;
+        return user;
     }
 
     @Override

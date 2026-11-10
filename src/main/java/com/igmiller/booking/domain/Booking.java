@@ -1,18 +1,21 @@
 package com.igmiller.booking.domain;
 
 import java.time.LocalDate;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Objects;
 
 public class Booking implements Identifiable<Long> {
-    private static final AtomicLong nextId = new AtomicLong(1);
-    private final long id;
+    private final Long id;
     private final long userId;
     private final long resourceId;
     private final TimeSlot slot;
     private final Money price;
     private BookingStatus status;
 
-    private Booking(long id, long userId, long resourceId, TimeSlot slot, Money price, BookingStatus status) {
+    private Booking(Long id, long userId, long resourceId, TimeSlot slot, Money price, BookingStatus status) {
+        if (id != null && id <= 0) {
+            throw new IllegalArgumentException("Id must be a positive integer");
+        }
+
         if (slot == null) {
             throw new IllegalArgumentException("Slot cannot be null");
         }
@@ -38,19 +41,20 @@ public class Booking implements Identifiable<Long> {
     }
 
     public static Booking of(long userId, long resourceId, TimeSlot slot, Money price) {
-        return new Booking(nextId.getAndIncrement(), userId, resourceId, slot, price, BookingStatus.CONFIRMED);
+        return new Booking(null, userId, resourceId, slot, price, BookingStatus.CONFIRMED);
+    }
+
+    public Booking withId(Long id) {
+        return restore(id, userId, resourceId, slot, price, status);
     }
 
     public static Booking restore(long id, long userId, long resourceId, TimeSlot slot, Money price, BookingStatus status) {
-        Booking booking = new Booking(id, userId, resourceId, slot, price, status);
-        nextId.updateAndGet(current -> Math.max(current, id + 1));
-
-        return booking;
+        return new Booking(id, userId, resourceId, slot, price, status);
     }
 
     @Override
     public int hashCode() {
-        return Long.hashCode(id);
+        return Objects.hashCode(id);
     }
 
 
@@ -65,7 +69,7 @@ public class Booking implements Identifiable<Long> {
 
         Booking other = (Booking) o;
 
-        return id == other.id;
+        return id != null && id.equals(other.id);
     }
 
 
