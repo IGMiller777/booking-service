@@ -5,7 +5,8 @@ import com.igmiller.booking.exception.*;
 import com.igmiller.booking.repository.InMemoryBookingRepository;
 import com.igmiller.booking.repository.InMemoryResourceRepository;
 import com.igmiller.booking.repository.InMemoryUserRepository;
-import com.igmiller.booking.util.AppConfig;
+import com.igmiller.booking.config.BookingProperties;
+import java.time.Duration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,8 +49,10 @@ class BookingServiceTest {
         room = resources.save(Resource.of("Room A", "MR-101", 8, Money.of("100", Currency.RUB),
                 ResourceType.MEETING_ROOM, ResourceStatus.ACTIVE));
 
-        AppConfig config = AppConfig.load(Path.of("no-such-config.properties"));
-        service = new BookingService(bookings, resources, users, new PricingService(), config, clock);
+        BookingProperties properties = new BookingProperties(5, Duration.ofHours(2), Path.of("data"));
+
+        HourlyPricingStrategy pricingStrategy = new HourlyPricingStrategy();
+        service = new BookingService(bookings, resources, users, new PricingService(pricingStrategy, new DiscountedPricingStrategy(pricingStrategy)), properties, clock);
     }
 
     private TimeSlot slot(LocalDate date, int from, int to) {

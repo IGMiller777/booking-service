@@ -5,7 +5,8 @@ import com.igmiller.booking.exception.*;
 import com.igmiller.booking.repository.BookingRepository;
 import com.igmiller.booking.repository.ResourceRepository;
 import com.igmiller.booking.repository.UserRepository;
-import com.igmiller.booking.util.AppConfig;
+import com.igmiller.booking.config.BookingProperties;
+import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -17,6 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Service
 public class BookingService {
     private final ConcurrentHashMap<Long, ReentrantLock> resourceLocks = new ConcurrentHashMap<>();
     private final int maxActiveBookingsPerUser;
@@ -32,14 +34,14 @@ public class BookingService {
     private final AtomicLong rejectedBookings = new AtomicLong();
     private final LongAdder concurrentRequests = new LongAdder();
 
-    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, UserRepository userRepository, PricingService pricingService, AppConfig appConfig, Clock clock) {
+    public BookingService(BookingRepository bookingRepository, ResourceRepository resourceRepository, UserRepository userRepository, PricingService pricingService, BookingProperties properties, Clock clock) {
         this.bookingRepository = bookingRepository;
         this.resourceRepository = resourceRepository;
         this.userRepository = userRepository;
         this.pricingService = pricingService;
         this.clock = clock;
-        this.maxActiveBookingsPerUser = appConfig.getInt("bookings.max.per.user", 5);
-        this.cancelWindow = Duration.ofHours(appConfig.getInt("bookings.cancel.window.hours", 2));
+        this.maxActiveBookingsPerUser = properties.maxActivePerUser();
+        this.cancelWindow = properties.cancelWindow();
     }
 
     public Booking book(long userId, long resourceId, TimeSlot slot) {

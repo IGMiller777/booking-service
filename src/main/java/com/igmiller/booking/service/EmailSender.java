@@ -1,7 +1,12 @@
 package com.igmiller.booking.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+@Component
 public class EmailSender implements NotificationSender {
-    private static final System.Logger LOG = System.getLogger(EmailSender.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(EmailSender.class);
 
     @Override
     public void send(String recipient, String message) {
@@ -13,6 +18,6 @@ public class EmailSender implements NotificationSender {
             return;
         }
 
-        LOG.log(System.Logger.Level.INFO, "Sending email to {0}: {1}", recipient, message);
+        log.info("Sending email to {}: {}", recipient, message);
     }
 }

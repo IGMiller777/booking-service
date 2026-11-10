@@ -3,10 +3,12 @@ package com.igmiller.booking.service;
 import com.igmiller.booking.domain.Money;
 import com.igmiller.booking.domain.Resource;
 import com.igmiller.booking.domain.TimeSlot;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+@Component
 public class HourlyPricingStrategy implements PricingStrategy {
 
     @Override

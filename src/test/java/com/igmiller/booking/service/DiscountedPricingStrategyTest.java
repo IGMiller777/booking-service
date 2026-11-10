@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DiscountedPricingStrategyTest {
     private static final LocalDate DATE = LocalDate.of(2026, 11, 2);
-    private final DiscountedPricingStrategy strategy = new DiscountedPricingStrategy();
+    private final DiscountedPricingStrategy strategy = new DiscountedPricingStrategy(new HourlyPricingStrategy());
 
     private static Resource roomWithRate(String rate, Currency currency) {
         return Resource.of("Room", "MR-101", 8, Money.of(rate, currency), ResourceType.MEETING_ROOM, ResourceStatus.ACTIVE);

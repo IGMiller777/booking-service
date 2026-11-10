@@ -3,9 +3,11 @@ package com.igmiller.booking.repository.file;
 import com.igmiller.booking.domain.Resource;
 import com.igmiller.booking.repository.ResourceRepository;
 import com.igmiller.booking.repository.InMemoryResourceRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public class FileResourceRepository implements ResourceRepository {
     private final Storage<Resource> storage;
     private final InMemoryResourceRepository cache;

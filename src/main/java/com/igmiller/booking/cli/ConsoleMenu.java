@@ -4,6 +4,8 @@ import com.igmiller.booking.domain.*;
 import com.igmiller.booking.exception.BookingServiceException;
 import com.igmiller.booking.exception.SlotUnavailableException;
 import com.igmiller.booking.service.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -11,7 +13,7 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 
 public class ConsoleMenu {
-    private static final System.Logger LOG = System.getLogger(ConsoleMenu.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(ConsoleMenu.class);
 
     private final InputReader input;
     private final BookingService bookingService;
@@ -65,7 +67,7 @@ public class ConsoleMenu {
                 }
             }
         } catch (InputClosedException e) {
-            LOG.log(System.Logger.Level.INFO, "Console input closed, shutting down");
+            log.info("Console input closed, shutting down");
         }
 
         System.out.println("Goodbye!");
@@ -162,7 +164,7 @@ public class ConsoleMenu {
             System.out.println("Error: " + e.getMessage());
         } catch (RuntimeException e) {
             System.out.println("Error. Check logs");
-            LOG.log(System.Logger.Level.ERROR, "Unexpected error while booking", e);
+            log.error("Unexpected error while booking", e);
         }
     }
 
