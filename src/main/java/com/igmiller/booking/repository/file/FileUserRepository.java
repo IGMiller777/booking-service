@@ -3,9 +3,11 @@ package com.igmiller.booking.repository.file;
 import com.igmiller.booking.domain.User;
 import com.igmiller.booking.repository.UserRepository;
 import com.igmiller.booking.repository.InMemoryUserRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+@Repository
 public class FileUserRepository implements UserRepository {
     private final Storage<User> storage;
     private final InMemoryUserRepository cache;
