@@ -1,5 +1,7 @@
 package com.igmiller.booking.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -7,7 +9,7 @@ import java.util.concurrent.*;
 
 @Service
 public class NotificationService implements AutoCloseable {
-    private static final System.Logger LOG = System.getLogger(NotificationService.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(NotificationService.class.getName());
     private static final int TIMEOUT_SECONDS = 5;
     private final ExecutorService executor = Executors.newFixedThreadPool(4, r -> {
         Thread t = new Thread(r, "notification-worker");
@@ -26,7 +28,7 @@ public class NotificationService implements AutoCloseable {
                 .orTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .exceptionally(ex -> {
                     Throwable cause = (ex instanceof CompletionException && ex.getCause() != null) ? ex.getCause() : ex;
-                    LOG.log(System.Logger.Level.WARNING, "Failed to send notification to " + recipient, cause);
+                    log.info("Failed to send notification to {}", recipient, cause);
                     return null;
                 });
     }
