@@ -28,7 +28,7 @@ public class NotificationService implements AutoCloseable {
                 .orTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .exceptionally(ex -> {
                     Throwable cause = (ex instanceof CompletionException && ex.getCause() != null) ? ex.getCause() : ex;
-                    log.info("Failed to send notification to {}", recipient, cause);
+                    log.warn("Failed to send notification to {}", recipient, cause);
                     return null;
                 });
     }

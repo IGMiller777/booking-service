@@ -67,7 +67,7 @@ public class ConsoleMenu {
                 }
             }
         } catch (InputClosedException e) {
-            log.error("Console input closed, shutting down");
+            log.info("Console input closed, shutting down");
         }
 
         System.out.println("Goodbye!");
