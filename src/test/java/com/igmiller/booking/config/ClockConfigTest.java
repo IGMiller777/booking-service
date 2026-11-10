@@ -8,8 +8,7 @@ import java.time.ZoneId;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
-public class ClockConfigTest {
+class ClockConfigTest {
     private final ApplicationContextRunner runner = new ApplicationContextRunner().withUserConfiguration(ClockConfig.class);
 
     @Test
@@ -17,7 +16,7 @@ public class ClockConfigTest {
         runner.run(context -> {
             Clock clock = context.getBean(Clock.class);
 
-            assertEquals(clock.getZone().toString(), ZoneId.systemDefault().toString());
+            assertEquals(ZoneId.systemDefault(), clock.getZone());
         });
     }
 }

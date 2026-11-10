@@ -10,4 +10,4 @@ spring:
 booking:
   max-active-per-user: 5
   cancel-window: 2h
-  data-dir: /data
+  data-dir: ./data
